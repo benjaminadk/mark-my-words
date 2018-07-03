@@ -1,0 +1,30 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  font-family: 'Fira Code';
+}
+
+.Post-a {
+  text-decoration: none;
+  color: rgb(255, 101, 101);
+}
+
+.Post-a:hover {
+  color: rgb(194, 42, 42);
+}
+
+.Post-img {
+  width: 33vw;
+  height: 33vw;
+}
+
+.Post-tr:nth-child(even) {
+  background-color: rgb(245, 245, 245);
+}
+
+.Post-th {
+  background-color: rgb(245, 245, 245);
+}
