@@ -11,8 +11,10 @@ import Chip from '@material-ui/core/Chip'
 import Paper from '@material-ui/core/Paper'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import IconButton from '@material-ui/core/IconButton'
+import Typography from '@material-ui/core/Typography'
 import AddIcon from '@material-ui/icons/Add'
 import Snack from '../components/Snack'
+import EmojiUtility from '../components/EmojiUtility'
 import Dropzone from 'react-dropzone'
 import axios from 'axios'
 
@@ -23,6 +25,22 @@ const styles = theme => ({
     flexDirection: 'column',
     justifyContent: 'space-between'
   },
+  leftUpper: {
+    display: 'grid',
+    gridTemplateColumns: '50% 50%'
+  },
+  dropzoneContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  utilsContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
   dropzone: {
     width: '10vw',
     height: '10vw',
@@ -30,7 +48,10 @@ const styles = theme => ({
     borderRadius: '10px',
     cursor: 'pointer',
     backgroundSize: 'cover',
-    alignSelf: 'center'
+    marginTop: '2vh',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center'
   },
   tagInput: {
     display: 'flex',
@@ -99,14 +120,16 @@ class NewPost extends Component {
   }
 
   handleCreatePost = async image => {
-    const { title, body } = this.state
+    const { title, body, tags } = this.state
     let response = await this.props.createPost({
-      variables: { title, body, image }
+      variables: { title, body, image, tags }
     })
     const { success, message } = response.data.createPost
     this.setState({
       title: '',
       body: '',
+      tags: [],
+      file: null,
       snack: true,
       snackMessage: message,
       snackVariant: success ? 'success' : 'error'
@@ -138,6 +161,7 @@ class NewPost extends Component {
 
   handleAddTag = () => {
     const { tag } = this.state
+    if (!tag.length) return
     this.setState(state => {
       const tags = state.tags ? [...state.tags, tag] : [tag]
       return { tags, tag: '' }
@@ -153,6 +177,12 @@ class NewPost extends Component {
     })
   }
 
+  handleEmojiClick = emoji =>
+    this.setState(state => {
+      const { body } = state
+      return { body: body.concat(emoji) }
+    })
+
   handleSnackClose = () => this.setState({ snack: false })
 
   handleChange = e => this.setState({ [e.target.name]: e.target.value })
@@ -165,23 +195,42 @@ class NewPost extends Component {
       <Grid key="new-post" container spacing={32}>
         <Grid item xs={4}>
           <div className={classes.left}>
+            <div className={classes.leftUpper}>
+              <div className={classes.dropzoneContainer}>
+                <Typography variant="subheading">Featured Image</Typography>
+                <Dropzone
+                  accept="image/*"
+                  multiple={false}
+                  className={classes.dropzone}
+                  onDrop={this.handleDrop}
+                  style={{
+                    backgroundImage: this.state.file
+                      ? `url(${this.state.file.preview})`
+                      : ''
+                  }}
+                >
+                  {!this.state.file && (
+                    <Typography
+                      align="center"
+                      variant="body2"
+                      style={{ padding: '1vw' }}
+                    >
+                      Click || Drag & Drop
+                    </Typography>
+                  )}
+                </Dropzone>
+              </div>
+              <div className={classes.utilsContainer}>
+                <Typography variant="subheading">Insert Emoji</Typography>
+                <EmojiUtility onClick={this.handleEmojiClick} />
+              </div>
+            </div>
             <TextField
               type="text"
               name="title"
               value={this.state.title}
               onChange={this.handleChange}
               label="Title"
-            />
-            <Dropzone
-              accept="image/*"
-              multiple={false}
-              className={classes.dropzone}
-              onDrop={this.handleDrop}
-              style={{
-                backgroundImage: this.state.file
-                  ? `url(${this.state.file.preview})`
-                  : ''
-              }}
             />
             <div className={classes.tagInput}>
               <TextField

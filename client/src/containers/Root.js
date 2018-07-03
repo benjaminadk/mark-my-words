@@ -8,7 +8,7 @@ import Post from '../containers/Post'
 import Photos from '../containers/Photos'
 import theme from '../styles/theme'
 
-const Home = () => <h1>BLOG</h1>
+const Home = () => <h1>Home</h1>
 
 class Root extends Component {
   render() {
