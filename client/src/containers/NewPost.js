@@ -19,6 +19,9 @@ import Dropzone from 'react-dropzone'
 import axios from 'axios'
 
 const styles = theme => ({
+  root: {
+    padding: theme.spacing.unit * 3
+  },
   left: {
     height: '100%',
     display: 'flex',
@@ -47,7 +50,9 @@ const styles = theme => ({
     border: `2px dashed ${theme.palette.text.secondary}`,
     borderRadius: '10px',
     cursor: 'pointer',
-    backgroundSize: 'cover',
+    backgroundSize: 'contain',
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'center',
     marginTop: '2vh',
     display: 'flex',
     flexDirection: 'column',
@@ -96,6 +101,7 @@ const styles = theme => ({
 class NewPost extends Component {
   state = {
     title: '',
+    subTitle: '',
     body: '',
     tag: '',
     tags: [],
@@ -120,13 +126,14 @@ class NewPost extends Component {
   }
 
   handleCreatePost = async image => {
-    const { title, body, tags } = this.state
+    const { title, subTitle, body, tags } = this.state
     let response = await this.props.createPost({
-      variables: { title, body, image, tags }
+      variables: { title, subTitle, body, image, tags }
     })
     const { success, message } = response.data.createPost
     this.setState({
       title: '',
+      subTitle: '',
       body: '',
       tags: [],
       file: null,
@@ -168,6 +175,12 @@ class NewPost extends Component {
     })
   }
 
+  handleTagKeyUp = e => {
+    if (e.keyCode === 13) {
+      this.handleAddTag()
+    }
+  }
+
   handleDeleteTag = tag => {
     this.setState(state => {
       const tags = [...state.tags]
@@ -192,7 +205,7 @@ class NewPost extends Component {
   render() {
     const { classes } = this.props
     return [
-      <Grid key="new-post" container spacing={32}>
+      <Grid key="new-post" container spacing={32} className={classes.root}>
         <Grid item xs={4}>
           <div className={classes.left}>
             <div className={classes.leftUpper}>
@@ -232,12 +245,20 @@ class NewPost extends Component {
               onChange={this.handleChange}
               label="Title"
             />
+            <TextField
+              type="text"
+              name="subTitle"
+              value={this.state.subTitle}
+              onChange={this.handleChange}
+              label="Sub Title"
+            />
             <div className={classes.tagInput}>
               <TextField
                 type="text"
                 name="tag"
                 value={this.state.tag}
                 onChange={this.handleChange}
+                onKeyUp={this.handleTagKeyUp}
                 label="Tag"
               />
               <IconButton

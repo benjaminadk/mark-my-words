@@ -5,7 +5,9 @@ export const ALL_POSTS_QUERY = gql`
     allPosts {
       id
       title
+      subTitle
       body
+      tags
       image
       createdAt
     }

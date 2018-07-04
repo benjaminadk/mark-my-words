@@ -5,8 +5,10 @@ export const POST_QUERY = gql`
     postById(postId: $postId) {
       id
       title
+      subTitle
       body
       image
+      tags
       createdAt
     }
   }

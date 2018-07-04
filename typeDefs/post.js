@@ -4,6 +4,7 @@ module.exports = gql`
   type Post {
     id: ID
     title: String
+    subTitle: String
     body: String
     image: String
     tags: [String]
@@ -18,6 +19,7 @@ module.exports = gql`
   type Mutation {
     createPost(
       title: String
+      subTitle: String
       body: String
       image: String
       tags: [String]

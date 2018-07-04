@@ -22,7 +22,14 @@ import Highlight from 'react-highlight'
 import 'highlight.js/styles/atom-one-dark.css'
 import { HashLink as Link } from 'react-router-hash-link'
 
-const styles = theme => ({})
+const styles = theme => ({
+  empty: {
+    backgroundColor: '#e8e8e8'
+  },
+  blog: {
+    padding: theme.spacing.unit * 3
+  }
+})
 
 class Post extends Component {
   componentDidMount() {
@@ -155,15 +162,23 @@ class Post extends Component {
   }
   render() {
     const {
-      data: { loading, postById }
+      data: { loading, postById },
+      classes
     } = this.props
     if (loading) return <Loading />
     return (
-      <Grid container>
-        <Grid item xs={12}>
-          <Typography variant="display4">{postById.title}</Typography>
+      <Grid container className={classes.root}>
+        <Grid item xs={2} className={classes.empty} />
+        <Grid item xs={8} className={classes.blog}>
+          <Typography variant="display3" align="center">
+            {postById.title}
+          </Typography>
+          <Typography variant="title" align="center">
+            {postById.subTitle}
+          </Typography>
           <div>{this.md.render(postById.body)}</div>
         </Grid>
+        <Grid item xs={2} className={classes.empty} />
       </Grid>
     )
   }

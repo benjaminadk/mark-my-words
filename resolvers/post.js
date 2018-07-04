@@ -9,10 +9,15 @@ module.exports = {
   },
 
   Mutation: {
-    createPost: async (root, { title, body, image, tags }, { models }) => {
+    createPost: async (
+      root,
+      { title, subTitle, body, image, tags },
+      { models }
+    ) => {
       try {
         const post = new models.Post({
           title,
+          subTitle,
           body,
           image,
           tags
