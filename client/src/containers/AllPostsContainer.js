@@ -1,18 +1,53 @@
 import React, { Component } from 'react'
 import { withStyles } from '@material-ui/core/styles'
-import { compose, graphql } from 'react-apollo'
-import { ALL_POSTS_QUERY } from '../apollo/queries/allPosts'
+import { graphql, compose } from 'react-apollo'
+import { ALL_POSTS_PAGINATED_QUERY } from '../apollo/queries/allPostsPaginated'
+import { DELETE_POST_MUTATION } from '../apollo/mutations/deletePost'
 import Grid from '@material-ui/core/Grid'
-import Card from '@material-ui/core/Card'
 import Chip from '@material-ui/core/Chip'
 import Downshift from 'downshift'
 import TextField from '@material-ui/core/TextField'
 import Paper from '@material-ui/core/Paper'
 import MenuItem from '@material-ui/core/MenuItem'
 import Typography from '@material-ui/core/Typography'
-import Loading from '../components/Loading'
 import SearchIcon from '@material-ui/icons/Search'
-import { formatDate } from '../utils/formatDate'
+import Loading from '../components/Loading'
+import Snack from '../components/Snack'
+import AllPosts from '../components/AllPosts/AllPosts'
+
+const config = {
+  options: props => {
+    let after = props.endCursor || ''
+    return {
+      variables: { first: 5, after }
+    }
+  },
+  force: true,
+  props: ({ ownProps, data }) => {
+    const { loading, allPostsPaginated, fetchMore } = data
+    const loadMoreRows = () => {
+      return fetchMore({
+        variables: {
+          after: allPostsPaginated.pageInfo.endCursor
+        },
+        updateQuery: (prev, { fetchMoreResult }) => {
+          const totalCount = fetchMoreResult.allPostsPaginated.totalCount
+          const newEdges = fetchMoreResult.allPostsPaginated.edges
+          const pageInfo = fetchMoreResult.allPostsPaginated.pageInfo
+          return {
+            allPostsPaginated: {
+              totalCount,
+              edges: [...prev.allPostsPaginated.edges, ...newEdges],
+              pageInfo,
+              __typename: 'PaginationPayload'
+            }
+          }
+        }
+      })
+    }
+    return { loading, allPostsPaginated, loadMoreRows }
+  }
+}
 
 const styles = theme => ({
   rootContainer: {
@@ -20,19 +55,30 @@ const styles = theme => ({
       padding: theme.spacing.unit * 3
     }
   },
+  outer: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center'
+  },
   searchTitle: {
-    marginTop: '5vh'
+    marginTop: '2.5vh'
   },
   searchContainer: {
     marginTop: '2.5vh'
   },
-  root: {
-    flexGrow: 1,
-    height: 250
-  },
   container: {
     flexGrow: 1,
     position: 'relative'
+  },
+  inputRoot: {
+    flexWrap: 'wrap',
+    width: '50vw'
+  },
+  chip: {
+    margin: theme.spacing.unit / 2,
+    height: 28,
+    fontSize: 11
   },
   paper: {
     position: 'absolute',
@@ -40,49 +86,23 @@ const styles = theme => ({
     marginTop: theme.spacing.unit,
     left: 0,
     right: 0
-  },
-  inputRoot: {
-    flexWrap: 'wrap'
-  },
-  chip: {
-    margin: theme.spacing.unit / 2,
-    height: 28,
-    fontSize: 11
-  },
-  cardContainer: {
-    marginTop: '5vh',
-    marginBottom: '5vh'
-  },
-  cardContent: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    cursor: 'pointer'
-  },
-  image: {
-    height: '33vh',
-    minWidth: '33vh',
-    backgroundSize: 'cover',
-    marginTop: '2vh',
-    marginBottom: '4vh'
-  },
-  postedOn: {
-    marginTop: '2vh',
-    marginBottom: '4vh'
   }
 })
 
-class AllPosts extends Component {
+class AllPostsContainer extends Component {
   state = {
     suggestions: [],
     inputValue: '',
-    selectedItem: []
+    selectedItem: [],
+    snack: false,
+    snackMessage: '',
+    snackVariant: ''
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.data.loading && !this.props.data.loading) {
-      const allTags = this.props.data.allPosts.map(post =>
-        post.tags.map(t => t)
+    if (!prevProps.allPostsPaginated && this.props.allPostsPaginated) {
+      const allTags = this.props.allPostsPaginated.edges.map(post =>
+        post.node.tags.map(t => t)
       )
       const flattened = [].concat.apply([], allTags)
       const suggestions = flattened
@@ -132,21 +152,12 @@ class AllPosts extends Component {
     )
   }
 
-  getSuggestions = inputValue => {
-    let count = 0
-
-    return this.state.suggestions.filter(suggestion => {
-      const keep =
-        (!inputValue ||
-          suggestion.label.toLowerCase().indexOf(inputValue.toLowerCase()) !==
-            -1) &&
-        count < 5
-
-      if (keep) {
-        count += 1
-      }
-
-      return keep
+  handleDelete = item => () => {
+    console.log(item)
+    this.setState(state => {
+      const selectedItem = [...state.selectedItem]
+      selectedItem.splice(selectedItem.indexOf(item), 1)
+      return { selectedItem }
     })
   }
 
@@ -163,6 +174,22 @@ class AllPosts extends Component {
     this.setState({ inputValue: event.target.value })
   }
 
+  getSuggestions = inputValue => {
+    let count = 0
+    return this.state.suggestions.filter(suggestion => {
+      const keep =
+        (!inputValue ||
+          suggestion.label.toLowerCase().indexOf(inputValue.toLowerCase()) !==
+            -1) &&
+        count < 5
+
+      if (keep) {
+        count += 1
+      }
+      return keep
+    })
+  }
+
   handleChange = item => {
     let { selectedItem } = this.state
 
@@ -176,11 +203,22 @@ class AllPosts extends Component {
     })
   }
 
-  handleDelete = item => () => {
-    this.setState(state => {
-      const selectedItem = [...state.selectedItem]
-      selectedItem.splice(selectedItem.indexOf(item), 1)
-      return { selectedItem }
+  handleSnackClose = () => this.setState({ snack: false })
+
+  handleDeletePost = async postId => {
+    var areTheySure = window.confirm('Delete Post? Action is permanent.')
+    if (!areTheySure) return
+    let response = await this.props.deletePost({
+      variables: { postId },
+      refetchQueries: [
+        { query: ALL_POSTS_PAGINATED_QUERY, variables: { first: 5, after: '' } }
+      ]
+    })
+    const { success, message } = response.data.deletePost
+    this.setState({
+      snack: true,
+      snackVariant: success ? 'success' : 'error',
+      snackMessage: message
     })
   }
 
@@ -189,38 +227,52 @@ class AllPosts extends Component {
     if (selectedItem.length === 0 && !inputValue) return posts
     else if (selectedItem.length === 0 && inputValue) {
       return posts.filter(p =>
-        p.title.toLowerCase().includes(inputValue.toLowerCase())
+        p.node.title.toLowerCase().includes(inputValue.toLowerCase())
       )
     } else {
       return posts.filter(p => {
         let display = true
         for (let i = 0; i < selectedItem.length; i++) {
-          if (!p.tags.includes(selectedItem[i])) {
+          if (!p.node.tags.includes(selectedItem[i])) {
             display = false
             break
           }
         }
         return (
-          display && p.title.toLowerCase().includes(inputValue.toLowerCase())
+          display &&
+          p.node.title.toLowerCase().includes(inputValue.toLowerCase())
         )
       })
     }
   }
 
-  handleNavigation = postId => this.props.history.push(`/post/${postId}`)
-
   render() {
     const {
-      data: { loading, allPosts },
+      loading,
+      allPostsPaginated,
+      loadMoreRows,
+      handleBlog,
       classes
     } = this.props
     const { inputValue, selectedItem } = this.state
-    if (loading) return <Loading />
-    return (
-      <Grid container className={classes.rootContainer}>
-        <Grid item xs={3} />
-        <Grid item xs={6}>
-          <div>
+    let renderChild
+    if (loading) {
+      renderChild = <Loading />
+    } else {
+      renderChild = (
+        <AllPosts
+          loadMoreRows={loadMoreRows}
+          posts={allPostsPaginated.edges}
+          totalCount={allPostsPaginated.totalCount}
+          handleBlog={handleBlog}
+          handleDeletePost={this.handleDeletePost}
+        />
+      )
+    }
+    return [
+      <Grid key="main" container className={classes.rootContainer}>
+        <Grid item xs={12}>
+          <div className={classes.outer}>
             <Typography variant="title" className={classes.searchTitle}>
               Search Posts
             </Typography>
@@ -280,42 +332,22 @@ class AllPosts extends Component {
               </Downshift>
             </div>
           </div>
-          {allPosts &&
-            this.filterPosts(allPosts).map(post => (
-              <div key={post.title} className={classes.cardContainer}>
-                <Card raised onClick={() => this.handleNavigation(post.id)}>
-                  <div className={classes.cardContent}>
-                    <img
-                      className={classes.image}
-                      src={post.image}
-                      alt="title"
-                    />
-                    <Typography variant="display2" align="center">
-                      {post.title}
-                    </Typography>
-                    <Typography variant="subheading">
-                      {post.subTitle}
-                    </Typography>
-                    <Typography variant="caption" className={classes.postedOn}>
-                      {`Posted On ${formatDate(post.createdAt)}`}
-                    </Typography>
-                    <div className={classes.tags}>
-                      {post.tags.map(t => (
-                        <Chip key={t} label={t} className={classes.chip} />
-                      ))}
-                    </div>
-                  </div>
-                </Card>
-              </div>
-            ))}
+          {renderChild}
         </Grid>
-        <Grid item xs={3} />
-      </Grid>
-    )
+      </Grid>,
+      <Snack
+        key="snackbar"
+        open={this.state.snack}
+        variant={this.state.snackVariant}
+        message={this.state.snackMessage}
+        handleClose={this.handleSnackClose}
+      />
+    ]
   }
 }
 
 export default compose(
   withStyles(styles),
-  graphql(ALL_POSTS_QUERY)
-)(AllPosts)
+  graphql(ALL_POSTS_PAGINATED_QUERY, config),
+  graphql(DELETE_POST_MUTATION, { name: 'deletePost' })
+)(AllPostsContainer)

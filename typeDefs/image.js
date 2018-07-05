@@ -20,5 +20,6 @@ module.exports = gql`
   type Mutation {
     createImage(url: String, title: String): Payload
     s3Sign(filename: String, filetype: String): S3Payload
+    deleteImage(imageId: ID, imageUrl: String): Payload
   }
 `

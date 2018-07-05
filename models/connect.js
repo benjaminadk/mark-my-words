@@ -3,10 +3,12 @@ const keys = require('../config')
 
 module.exports = async () => {
   try {
-    await mongoose.connect(
+    mongoose.connect(
       keys.MLAB_URI,
       () => console.log('MONGO UP')
     )
+    mongoose.Promise = global.Promise
+    mongoose.set('debug', true)
   } catch (error) {
     console.log(error)
   }

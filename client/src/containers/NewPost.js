@@ -1,7 +1,10 @@
 import React, { Component } from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import { compose, graphql } from 'react-apollo'
+import { ALL_POSTS_PAGINATED_QUERY } from '../apollo/queries/allPostsPaginated'
+import { ALL_IMAGES_QUERY } from '../apollo/queries/allImages'
 import { CREATE_POST_MUTATION } from '../apollo/mutations/createPost'
+import { UPDATE_POST_MUTATION } from '../apollo/mutations/updatePost'
 import { S3_SIGN_MUTATION } from '../apollo/mutations/s3Sign'
 import { CREATE_IMAGE_MUTATION } from '../apollo/mutations/createImage'
 import Grid from '@material-ui/core/Grid'
@@ -14,7 +17,8 @@ import IconButton from '@material-ui/core/IconButton'
 import Typography from '@material-ui/core/Typography'
 import AddIcon from '@material-ui/icons/Add'
 import Snack from '../components/Snack'
-import EmojiUtility from '../components/EmojiUtility'
+import EmojiUtility from '../components/NewPost/EmojiUtility'
+import SnippetUtility from '../components/NewPost/SnippetUtility'
 import Dropzone from 'react-dropzone'
 import axios from 'axios'
 
@@ -99,20 +103,58 @@ const styles = theme => ({
 })
 
 class NewPost extends Component {
-  state = {
-    title: '',
-    subTitle: '',
-    body: '',
-    tag: '',
-    tags: [],
-    file: null,
-    progress: 0,
-    snack: false,
-    snackMessage: '',
-    snackVariant: ''
+  constructor(props) {
+    super(props)
+    this.state = {
+      postId: '',
+      title: '',
+      subTitle: '',
+      body: '',
+      tag: '',
+      tags: [],
+      file: null,
+      progress: 0,
+      snack: false,
+      snackMessage: '',
+      snackVariant: ''
+    }
+    this.textarea = React.createRef()
   }
 
-  handleUploadImage = async (file, requestUrl) => {
+  componentWillMount() {
+    if (this.props.editMode) {
+      const { id, title, subTitle, image, body, tags } = this.props.blog
+      this.setState({ postId: id, title, subTitle, image, body, tags })
+    }
+  }
+
+  resetState = (success, message) =>
+    this.setState({
+      title: '',
+      subTitle: '',
+      body: '',
+      image: '',
+      tags: [],
+      file: null,
+      snack: true,
+      snackMessage: message,
+      snackVariant: success ? 'success' : 'error'
+    })
+
+  errorSnack = () =>
+    this.setState({
+      snack: true,
+      snackVariant: 'error',
+      snackMessage: 'error creating post'
+    })
+
+  handleUploadImage = async () => {
+    const { file } = this.state
+    let response = await this.props.s3Sign({
+      variables: { filename: file.name, filetype: file.type },
+      refetchQueries: [{ query: ALL_IMAGES_QUERY }]
+    })
+    const { requestUrl, imageUrl } = response.data.s3Sign
     const options = {
       headers: { 'Content-Type': file.type },
       onUploadProgress: progressEvent => {
@@ -123,46 +165,59 @@ class NewPost extends Component {
       }
     }
     await axios.put(requestUrl, file, options)
+    await this.props.createImage({
+      variables: { url: imageUrl, title: file.name }
+    })
+    return imageUrl
   }
 
-  handleCreatePost = async image => {
-    const { title, subTitle, body, tags } = this.state
-    let response = await this.props.createPost({
-      variables: { title, subTitle, body, image, tags }
-    })
-    const { success, message } = response.data.createPost
-    this.setState({
-      title: '',
-      subTitle: '',
-      body: '',
-      tags: [],
-      file: null,
-      snack: true,
-      snackMessage: message,
-      snackVariant: success ? 'success' : 'error'
-    })
-  }
-
-  handleBlog = async () => {
+  handleCreateBlog = async () => {
     try {
-      const { file } = this.state
-      let response = await this.props.s3Sign({
-        variables: { filename: file.name, filetype: file.type }
+      const { title, subTitle, body, tags } = this.state
+      let image = await this.handleUploadImage()
+      let response = await this.props.createPost({
+        variables: { title, subTitle, body, image, tags },
+        refetchQueries: [
+          {
+            query: ALL_POSTS_PAGINATED_QUERY,
+            variables: { first: 5, after: '' }
+          }
+        ]
       })
-      const { requestUrl, imageUrl } = response.data.s3Sign
-      await this.handleUploadImage(file, requestUrl)
-      let response2 = await this.props.createImage({
-        variables: { url: imageUrl, title: file.name }
-      })
-      const { success, message } = response2.data.createImage
-      await this.setState({
-        snack: true,
-        snackVariant: success ? 'success' : 'error',
-        snackMessage: message
-      })
-      await this.handleCreatePost(imageUrl)
+      const { success, message } = response.data.createPost
+      this.resetState(success, message)
     } catch (error) {
-      // error
+      this.errorSnack()
+    }
+  }
+
+  handleUpdateBlog = async () => {
+    try {
+      const { postId, title, subTitle, image, body, tags, file } = this.state
+      let imageUrl
+      if (file) {
+        imageUrl = await this.handleUploadImage()
+      }
+      let response = await this.props.updatePost({
+        variables: {
+          postId,
+          title,
+          subTitle,
+          body,
+          image: imageUrl ? imageUrl : image,
+          tags
+        },
+        refetchQueries: [
+          {
+            query: ALL_POSTS_PAGINATED_QUERY,
+            variables: { first: 5, after: '' }
+          }
+        ]
+      })
+      const { success, message } = response.data.updatePost
+      this.resetState(success, message)
+    } catch (error) {
+      this.errorSnack()
     }
   }
 
@@ -196,6 +251,14 @@ class NewPost extends Component {
       return { body: body.concat(emoji) }
     })
 
+  handleSnippetClick = snippet => {
+    this.setState(state => {
+      const { body } = state
+      return { body: body.concat(snippet) }
+    })
+    this.textarea.current.focus()
+  }
+
   handleSnackClose = () => this.setState({ snack: false })
 
   handleChange = e => this.setState({ [e.target.name]: e.target.value })
@@ -219,18 +282,21 @@ class NewPost extends Component {
                   style={{
                     backgroundImage: this.state.file
                       ? `url(${this.state.file.preview})`
-                      : ''
+                      : this.props.editMode
+                        ? `url(${this.state.image})`
+                        : ''
                   }}
                 >
-                  {!this.state.file && (
-                    <Typography
-                      align="center"
-                      variant="body2"
-                      style={{ padding: '1vw' }}
-                    >
-                      Click || Drag & Drop
-                    </Typography>
-                  )}
+                  {!this.state.file &&
+                    !this.state.image && (
+                      <Typography
+                        align="center"
+                        variant="body2"
+                        style={{ padding: '1vw' }}
+                      >
+                        Click || Drag & Drop
+                      </Typography>
+                    )}
                 </Dropzone>
               </div>
               <div className={classes.utilsContainer}>
@@ -279,32 +345,44 @@ class NewPost extends Component {
                   />
                 ))}
             </Paper>
-            <Button variant="raised" color="primary" onClick={this.handleBlog}>
-              Create Post
+            <Button
+              variant="raised"
+              color="primary"
+              onClick={
+                this.props.editMode
+                  ? this.handleUpdateBlog
+                  : this.handleCreateBlog
+              }
+            >
+              {this.props.editMode ? 'Update Post' : 'Create Post'}
             </Button>
           </div>
         </Grid>
         <Grid item xs={8}>
-          <TextField
-            type="text"
-            name="body"
-            value={this.state.body}
-            onChange={this.handleChange}
-            label="New Post"
-            multiline
-            fullWidth
-            rows={25}
-            InputProps={{
-              disableUnderline: true,
-              classes: { input: classes.customInput }
-            }}
-            InputLabelProps={{ shrink: true, className: classes.customLabel }}
-          />
-          <LinearProgress
-            variant="determinate"
-            value={this.state.progress}
-            className={classes.progress}
-          />
+          <SnippetUtility onClick={this.handleSnippetClick} />
+          <div>
+            <TextField
+              type="text"
+              name="body"
+              value={this.state.body}
+              onChange={this.handleChange}
+              label="New Post"
+              multiline
+              fullWidth
+              rows={22}
+              InputProps={{
+                disableUnderline: true,
+                classes: { input: classes.customInput },
+                inputRef: this.textarea
+              }}
+              InputLabelProps={{ shrink: true, className: classes.customLabel }}
+            />
+            <LinearProgress
+              variant="determinate"
+              value={this.state.progress}
+              className={classes.progress}
+            />
+          </div>
         </Grid>
       </Grid>,
       <Snack
@@ -321,6 +399,7 @@ class NewPost extends Component {
 export default compose(
   withStyles(styles),
   graphql(CREATE_POST_MUTATION, { name: 'createPost' }),
+  graphql(UPDATE_POST_MUTATION, { name: 'updatePost' }),
   graphql(CREATE_IMAGE_MUTATION, { name: 'createImage' }),
   graphql(S3_SIGN_MUTATION, { name: 's3Sign' })
 )(NewPost)

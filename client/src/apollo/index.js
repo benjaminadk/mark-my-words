@@ -1,5 +1,5 @@
 import { ApolloClient } from 'apollo-client'
-import { InMemoryCache } from 'apollo-cache-inmemory'
+import { InMemoryCache, defaultDataIdFromObject } from 'apollo-cache-inmemory'
 import { HttpLink } from 'apollo-link-http'
 import { onError } from 'apollo-link-error'
 import { ApolloLink, concat, split } from 'apollo-link'
@@ -49,9 +49,22 @@ const link = split(
 
 const linkWithMiddleware = concat(authMiddleware, link)
 
+const cache = new InMemoryCache({
+  dataIdFromObject: object => {
+    switch (object.__typename) {
+      case 'Post':
+        return object.id
+      case 'Image':
+        return object._id
+      default:
+        return defaultDataIdFromObject(object)
+    }
+  }
+})
+
 const client = new ApolloClient({
   link: linkWithMiddleware,
-  cache: new InMemoryCache()
+  cache
 })
 
 export default client

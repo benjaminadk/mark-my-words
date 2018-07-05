@@ -9,6 +9,7 @@ export const POST_QUERY = gql`
       body
       image
       tags
+      views
       createdAt
     }
   }

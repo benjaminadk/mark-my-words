@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import { compose, graphql } from 'react-apollo'
 import { POST_QUERY } from '../apollo/queries/postById'
+import { ADD_VIEW_MUTATION } from '../apollo/mutations/addView'
+import { HashLink as Link } from 'react-router-hash-link'
 import Grid from '@material-ui/core/Grid'
 import Typography from '@material-ui/core/Typography'
 import Table from '@material-ui/core/Table'
@@ -12,6 +14,7 @@ import Tooltip from '@material-ui/core/Tooltip'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
+import Divider from '@material-ui/core/Divider'
 import QuoteIcon from '@material-ui/icons/FormatQuote'
 import CheckedIcon from '@material-ui/icons/CheckBox'
 import UncheckedIcon from '@material-ui/icons/CheckBoxOutlineBlank'
@@ -20,19 +23,39 @@ import Remarkable from 'remarkable'
 import RemarkableReactRenderer from 'remarkable-react'
 import Highlight from 'react-highlight'
 import 'highlight.js/styles/atom-one-dark.css'
-import { HashLink as Link } from 'react-router-hash-link'
+import '../styles/post.css'
 
 const styles = theme => ({
   empty: {
     backgroundColor: '#e8e8e8'
   },
   blog: {
-    padding: theme.spacing.unit * 3
+    padding: theme.spacing.unit * 3,
+    backgroundColor: '#FFFFFF'
+  },
+  imageContainer: {
+    display: 'flex',
+    justifyContent: 'center'
+  },
+  image: {
+    height: '20vw',
+    minWidth: '20vw',
+    margin: '2vh 0'
+  },
+  subTitle: {
+    marginBottom: '5vh'
+  },
+  divider: {
+    marginBottom: '5vh'
   }
 })
 
 class Post extends Component {
-  componentDidMount() {
+  state = {
+    dummy: 0
+  }
+
+  componentWillMount() {
     this.md = new Remarkable({
       typographer: true,
       html: true,
@@ -51,19 +74,19 @@ class Post extends Component {
     this.md.renderer = new RemarkableReactRenderer({
       components: {
         h1: ({ children }) => (
-          <Typography variant="display4">{children}</Typography>
-        ),
-        h2: ({ children }) => (
           <Typography variant="display3">{children}</Typography>
         ),
-        h3: ({ children }) => (
+        h2: ({ children }) => (
           <Typography variant="display2">{children}</Typography>
         ),
-        h4: ({ children }) => (
+        h3: ({ children }) => (
           <Typography variant="display1">{children}</Typography>
         ),
-        h5: ({ children }) => (
+        h4: ({ children }) => (
           <Typography variant="headline">{children}</Typography>
+        ),
+        h5: ({ children }) => (
+          <Typography variant="subheading">{children}</Typography>
         ),
         h6: ({ children }) => (
           <Typography variant="title">{children}</Typography>
@@ -160,6 +183,13 @@ class Post extends Component {
       }
     })
   }
+
+  async componentDidMount() {
+    await this.props.addView({
+      variables: { postId: this.props.params.match.postId }
+    })
+  }
+
   render() {
     const {
       data: { loading, postById },
@@ -170,13 +200,25 @@ class Post extends Component {
       <Grid container className={classes.root}>
         <Grid item xs={2} className={classes.empty} />
         <Grid item xs={8} className={classes.blog}>
+          <div className={classes.imageContainer}>
+            <img
+              src={postById.image}
+              alt="featured"
+              className={classes.image}
+            />
+          </div>
           <Typography variant="display3" align="center">
             {postById.title}
           </Typography>
-          <Typography variant="title" align="center">
+          <Typography
+            variant="title"
+            align="center"
+            className={classes.subTitle}
+          >
             {postById.subTitle}
           </Typography>
-          <div>{this.md.render(postById.body)}</div>
+          <Divider className={classes.divider} />
+          <div>{this.md && this.md.render(postById.body)}</div>
         </Grid>
         <Grid item xs={2} className={classes.empty} />
       </Grid>
@@ -188,5 +230,6 @@ export default compose(
   withStyles(styles),
   graphql(POST_QUERY, {
     options: props => ({ variables: { postId: props.match.params.postId } })
-  })
+  }),
+  graphql(ADD_VIEW_MUTATION, { name: 'addView' })
 )(Post)
