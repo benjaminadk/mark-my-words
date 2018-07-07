@@ -1,8 +1,8 @@
 import gql from 'graphql-tag'
 
-export const POST_QUERY = gql`
-  query($postId: ID) {
-    postById(postId: $postId) {
+export const LATEST_POST_QUERY = gql`
+  query {
+    latestPost {
       id
       title
       subTitle

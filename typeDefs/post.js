@@ -2,13 +2,15 @@ const { gql } = require('apollo-server')
 
 module.exports = gql`
   type Post {
+    _id: ID
     id: ID
     title: String
     subTitle: String
     body: String
     image: String
     tags: [String]
-    views: Int
+    views: [View]
+    comments: [Comment]
     createdAt: String
   }
 
@@ -34,6 +36,8 @@ module.exports = gql`
     allPostsPaginated(first: Int, after: String): PaginationPayload
 
     postById(postId: ID): Post
+
+    latestPost: Post
   }
 
   type Mutation {

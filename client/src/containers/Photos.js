@@ -79,12 +79,20 @@ class Photos extends Component {
   }
 
   handleCopy = text => {
-    copy(text)
-    this.setState({
-      snack: true,
-      snackMessage: 'image url copied to clipboard',
-      snackVariant: 'success'
-    })
+    try {
+      copy(text)
+      this.setState({
+        snack: true,
+        snackMessage: 'image url copied to clipboard',
+        snackVariant: 'success'
+      })
+    } catch (error) {
+      this.setState({
+        snack: true,
+        snackMessage: 'error copying to clipboard',
+        snackVariant: 'error'
+      })
+    }
   }
 
   handleSnackClose = () => this.setState({ snack: false })

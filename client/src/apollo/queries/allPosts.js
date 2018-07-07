@@ -9,7 +9,9 @@ export const ALL_POSTS_QUERY = gql`
       body
       tags
       image
-      views
+      views {
+        createdAt
+      }
       createdAt
     }
   }

@@ -2,6 +2,13 @@ const { ApolloServer } = require('apollo-server-express')
 const express = require('express')
 const path = require('path')
 const http = require('http')
+const passport = require('passport')
+const {
+  googleOauth,
+  googleCallback,
+  googleRedirect,
+  googleScope
+} = require('./services/googleAuth')
 const {
   fileLoader,
   mergeTypes,
@@ -16,11 +23,21 @@ const models = require('./models')
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: {
-    models
+  context: async ({ req, connection }) => {
+    if (connection) return {}
+    const user = await require('./middleware/userAuth')(
+      req.headers['authorization']
+    )
+    return { models, user }
   }
 })
 const app = express()
+
+passport.use(googleOauth)
+app.use(passport.initialize())
+app.get('/auth/google', googleScope)
+app.get('/auth/google/callback', googleCallback, googleRedirect)
+
 server.applyMiddleware({ app, path: '/graphql' })
 
 const httpServer = http.createServer(app)

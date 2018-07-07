@@ -10,6 +10,7 @@ import List from '@material-ui/core/List'
 import Typography from '@material-ui/core/Typography'
 import Divider from '@material-ui/core/Divider'
 import IconButton from '@material-ui/core/IconButton'
+import Button from '@material-ui/core/Button'
 import MenuIcon from '@material-ui/icons/Menu'
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft'
 import MainMenu from './MainMenu'
@@ -40,6 +41,15 @@ const styles = theme => ({
       duration: theme.transitions.duration.enteringScreen
     })
   },
+  top: {
+    display: 'flex',
+    justifyContent: 'space-between'
+  },
+  topLeft: {
+    display: 'flex',
+    alignItems: 'center'
+  },
+  topRight: {},
   menuButton: {
     marginLeft: 12,
     marginRight: 36
@@ -77,7 +87,6 @@ const styles = theme => ({
   content: {
     flexGrow: 1,
     backgroundColor: theme.palette.background.default
-    //padding: theme.spacing.unit * 3
   }
 })
 
@@ -93,7 +102,7 @@ class MainNav extends Component {
   handleNavigation = path => this.props.history.push(path)
 
   render() {
-    const { classes } = this.props
+    const { classes, userId, isAuthenticated, handleLogout } = this.props
 
     return (
       <div className={classes.root}>
@@ -104,21 +113,32 @@ class MainNav extends Component {
             this.state.open && classes.appBarShift
           )}
         >
-          <Toolbar disableGutters={!this.state.open}>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              onClick={this.handleDrawerOpen}
-              className={classNames(
-                classes.menuButton,
-                this.state.open && classes.hide
-              )}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="title" color="inherit" noWrap>
-              Blog
-            </Typography>
+          <Toolbar disableGutters={!this.state.open} className={classes.top}>
+            <div className={classes.topLeft}>
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                onClick={this.handleDrawerOpen}
+                className={classNames(
+                  classes.menuButton,
+                  this.state.open && classes.hide
+                )}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Typography variant="title" color="inherit" noWrap>
+                Mark My Words
+              </Typography>
+            </div>
+            <div className={classes.topRight}>
+              <Button
+                href={isAuthenticated ? null : '/auth/google'}
+                onClick={isAuthenticated ? handleLogout : null}
+                color="inherit"
+              >
+                {isAuthenticated ? 'Logout' : 'Login'}
+              </Button>
+            </div>
           </Toolbar>
         </AppBar>
         <Drawer
@@ -137,7 +157,10 @@ class MainNav extends Component {
             </IconButton>
           </div>
           <Divider />
-          <MainMenu handleNavigation={this.handleNavigation} />
+          <MainMenu
+            userId={isAuthenticated ? userId : null}
+            handleNavigation={this.handleNavigation}
+          />
           <Divider />
           <List />
         </Drawer>

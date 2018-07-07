@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const AutoIncrement = require('mongoose-sequence')(mongoose)
+const autopopulate = require('mongoose-autopopulate')
 const Schema = mongoose.Schema
 
 const postSchema = new Schema({
@@ -8,9 +9,14 @@ const postSchema = new Schema({
   body: String,
   image: String,
   tags: [String],
+  comments: {
+    type: [Schema.Types.ObjectId],
+    ref: 'comment',
+    autopopulate: true
+  },
   views: {
-    type: Number,
-    default: 0
+    type: [Schema.Types.ObjectId],
+    ref: 'view'
   },
   createdAt: {
     type: Date,
@@ -19,4 +25,5 @@ const postSchema = new Schema({
 })
 
 postSchema.plugin(AutoIncrement, { inc_field: 'id' })
+postSchema.plugin(autopopulate)
 mongoose.model('post', postSchema)

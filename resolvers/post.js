@@ -92,10 +92,27 @@ module.exports = {
       return returnValue
     },
 
-    allPosts: async (root, args, { models }) => await models.Post.find(),
+    allPosts: async (root, args, { models }) => {
+      return await models.Post.find()
+        .populate([
+          {
+            path: 'views',
+            model: 'view'
+          }
+        ])
+        .exec()
+    },
 
-    postById: async (root, { postId }, { models }) =>
-      await models.Post.findOne({ id: postId })
+    postById: async (root, { postId }, { models }) => {
+      return await models.Post.findOne({ id: postId })
+    },
+
+    latestPost: async (root, args, { models }) => {
+      const post = await models.Post.findOne()
+        .sort('-createdAt')
+        .exec()
+      return post
+    }
   },
 
   Mutation: {
@@ -157,8 +174,10 @@ module.exports = {
 
     addView: async (root, { postId }, { models }) => {
       try {
+        const view = new models.View()
+        const savedView = await view.save()
         const filter = { id: postId }
-        const update = { $inc: { views: 1 } }
+        const update = { $push: { views: savedView._id } }
         await models.Post.findOneAndUpdate(filter, update)
         return {
           success: true,

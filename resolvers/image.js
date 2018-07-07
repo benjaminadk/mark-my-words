@@ -4,8 +4,8 @@ const keys = require('../config')
 const s3 = new aws.S3({
   signatureVersion: 'v4',
   region: 'us-west-1',
-  accessKeyId: keys.accessKeyId,
-  secretAccessKey: keys.secretAccessKey
+  accessKeyId: keys.AWS_ACCESS,
+  secretAccessKey: keys.AWS_SECRET
 })
 const s3Bucket = 'simple-blogger-react'
 

@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import { compose, graphql } from 'react-apollo'
-import { POST_QUERY } from '../apollo/queries/postById'
+import { LATEST_POST_QUERY } from '../apollo/queries/latestPost'
 import { ALL_POSTS_QUERY } from '../apollo/queries/allPosts'
 import { ADD_VIEW_MUTATION } from '../apollo/mutations/addView'
+import { CREATE_COMMENT_MUTATION } from '../apollo/mutations/createComment'
 import { HashLink as Link } from 'react-router-hash-link'
 import Grid from '@material-ui/core/Grid'
 import Typography from '@material-ui/core/Typography'
@@ -16,22 +17,30 @@ import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
 import Divider from '@material-ui/core/Divider'
+import Avatar from '@material-ui/core/Avatar'
+import TextField from '@material-ui/core/TextField'
+import Button from '@material-ui/core/Button'
 import QuoteIcon from '@material-ui/icons/FormatQuote'
 import CheckedIcon from '@material-ui/icons/CheckBox'
 import UncheckedIcon from '@material-ui/icons/CheckBoxOutlineBlank'
 import Loading from '../components/Loading'
+import Snack from '../components/Snack'
 import Remarkable from 'remarkable'
 import RemarkableReactRenderer from 'remarkable-react'
 import Highlight from 'react-highlight'
 import 'highlight.js/styles/atom-one-dark.css'
 import '../styles/post.css'
+import { formatDate } from '../utils/formatDate'
+import { howLongAgo } from '../utils/howLongAgo'
 
 const styles = theme => ({
-  empty: {
+  root: {
     backgroundColor: '#e8e8e8'
   },
-  blog: {
+  container: {
     padding: theme.spacing.unit * 3,
+    marginTop: '10vh',
+    marginBottom: '10vh',
     backgroundColor: '#FFFFFF'
   },
   imageContainer: {
@@ -48,12 +57,26 @@ const styles = theme => ({
   },
   divider: {
     marginBottom: '5vh'
+  },
+  rootComment: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: '5vh'
+  },
+  rootCommentInput: {
+    marginLeft: '1vw',
+    marginRight: '1vw'
   }
 })
 
-class Post extends Component {
+class LatestPost extends Component {
   state = {
-    dummy: 0
+    dummy: 0,
+    comment: '',
+    snack: false,
+    snackMessage: '',
+    snackVariant: ''
   }
 
   componentWillMount() {
@@ -98,7 +121,7 @@ class Post extends Component {
         blockquote: ({ children }) => (
           <div style={{ display: 'flex' }}>
             <QuoteIcon style={{ transform: 'scaleX(-1)' }} />
-            <Typography varaint="body2">
+            <Typography variant="body2">
               {children[0].props.children}
             </Typography>
             <QuoteIcon />
@@ -185,53 +208,144 @@ class Post extends Component {
     })
   }
 
-  async componentDidMount() {
-    await this.props.addView({
-      variables: { postId: this.props.match.params.postId },
-      refetchQueries: [{ query: ALL_POSTS_QUERY }]
-    })
+  async componentDidUpdate(prevProps) {
+    if (
+      prevProps.data.loading &&
+      !this.props.data.loading &&
+      this.props.data.latestPost
+    ) {
+      await this.props.addView({
+        variables: { postId: this.props.data.latestPost.id },
+        refetchQueries: [{ query: ALL_POSTS_QUERY }]
+      })
+    }
   }
+
+  handleCreateComment = async () => {
+    let response, success, message
+    try {
+      response = await this.props.createComment({
+        variables: {
+          text: this.state.comment,
+          postId: this.props.data.latestPost.id
+        }
+      })
+      success = response.data.createComment.success
+      message = response.data.createComment.message
+      this.setState({
+        snack: success,
+        snackMessage: message,
+        snackVariant: 'success',
+        comment: ''
+      })
+    } catch (error) {
+      this.setState({
+        snack: true,
+        snackMessage: message,
+        snackVariant: 'error'
+      })
+    }
+  }
+
+  handleChange = e => this.setState({ [e.target.name]: e.target.value })
+
+  handleSnackClose = () => this.setState({ snack: false })
 
   render() {
     const {
-      data: { loading, postById },
-      classes
+      data: { loading, latestPost },
+      classes,
+      user,
+      isAuthenticated
     } = this.props
-    if (loading) return <Loading />
-    return (
-      <Grid container className={classes.root}>
-        <Grid item xs={2} className={classes.empty} />
-        <Grid item xs={8} className={classes.blog}>
-          <div className={classes.imageContainer}>
-            <img
-              src={postById.image}
-              alt="featured"
-              className={classes.image}
-            />
-          </div>
-          <Typography variant="display3" align="center">
-            {postById.title}
-          </Typography>
-          <Typography
-            variant="title"
-            align="center"
-            className={classes.subTitle}
-          >
-            {postById.subTitle}
-          </Typography>
-          <Divider className={classes.divider} />
-          <div>{this.md && this.md.render(postById.body)}</div>
+    const { comment } = this.state
+    if (loading || !latestPost) return <Loading />
+    return [
+      <div key="main">
+        <Grid container className={classes.root}>
+          <Grid item xs={2} className={classes.empty} />
+          <Grid item xs={8} className={classes.container}>
+            <Typography>{formatDate(latestPost.createdAt)}</Typography>
+            <div className={classes.imageContainer}>
+              <img
+                src={latestPost.image}
+                alt="featured"
+                className={classes.image}
+              />
+            </div>
+            <Typography variant="display3" align="center">
+              {latestPost.title}
+            </Typography>
+            <Typography
+              variant="title"
+              align="center"
+              className={classes.subTitle}
+            >
+              {latestPost.subTitle}
+            </Typography>
+            <Divider className={classes.divider} />
+            <div>{this.md && this.md.render(latestPost.body)}</div>
+          </Grid>
+          <Grid item xs={2} className={classes.empty} />
         </Grid>
-        <Grid item xs={2} className={classes.empty} />
-      </Grid>
-    )
+        <Grid container className={classes.root}>
+          <Grid item xs={2} className={classes.empty} />
+          <Grid item xs={8} className={classes.container}>
+            <Typography variant="title">Comments</Typography>
+            {user &&
+              isAuthenticated && (
+                <div className={classes.rootComment}>
+                  <Avatar src={user.avatar} alt="profile" />
+                  <TextField
+                    type="text"
+                    name="comment"
+                    value={comment}
+                    onChange={this.handleChange}
+                    placeholder="Post a comment..."
+                    fullWidth
+                    multiline
+                    rowsMax={5}
+                    className={classes.rootCommentInput}
+                  />
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    disabled={!comment}
+                    onClick={this.handleCreateComment}
+                  >
+                    Comment
+                  </Button>
+                </div>
+              )}
+            <div className={classes.comments}>
+              {latestPost.comments &&
+                latestPost.comments.map((c, i) => (
+                  <div key={`comment-${i}`} className={classes.comment}>
+                    <Typography>{c.postedBy.username}</Typography>
+                    <Typography>{howLongAgo(c.createdAt)}</Typography>
+                    <Avatar src={c.postedBy.avatar} alt="commenter" />
+                    <Typography>{c.text}</Typography>
+                  </div>
+                ))}
+            </div>
+          </Grid>
+          <Grid item xs={2} className={classes.empty} />
+        </Grid>
+      </div>,
+      <Snack
+        key="snackbar"
+        open={this.state.snack}
+        message={this.state.snackMessage}
+        variant={this.state.snackVariant}
+        handleClose={this.handleSnackClose}
+      />
+    ]
   }
 }
 
 export default compose(
   withStyles(styles),
-  graphql(POST_QUERY, {
-    options: props => ({ variables: { postId: props.match.params.postId } })
-  }),
-  graphql(ADD_VIEW_MUTATION, { name: 'addView' })
-)(Post)
+  graphql(LATEST_POST_QUERY),
+  graphql(ADD_VIEW_MUTATION, { name: 'addView' }),
+  graphql(CREATE_COMMENT_MUTATION, { name: 'createComment' })
+)(LatestPost)

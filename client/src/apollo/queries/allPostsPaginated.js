@@ -13,7 +13,6 @@ export const ALL_POSTS_PAGINATED_QUERY = gql`
           body
           tags
           image
-          views
           createdAt
         }
       }
