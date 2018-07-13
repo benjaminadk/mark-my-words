@@ -264,6 +264,7 @@ class AllPostsContainer extends Component {
           loadMoreRows={loadMoreRows}
           posts={allPostsPaginated.edges}
           totalCount={allPostsPaginated.totalCount}
+          isAdmin={this.props.isAdmin}
           handleBlog={handleBlog}
           handleDeletePost={this.handleDeletePost}
         />

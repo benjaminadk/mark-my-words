@@ -109,24 +109,28 @@ class AllPosts extends Component {
                     <VisibilityIcon />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title="Edit Post">
-                  <IconButton
-                    classes={{ root: classes.iconButton }}
-                    disableRipple
-                    onClick={() => this.handleEditPost(content)}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Delete Post">
-                  <IconButton
-                    classes={{ root: classes.iconButton }}
-                    disableRipple
-                    onClick={() => this.props.handleDeletePost(content.id)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Tooltip>
+                {this.props.isAdmin && (
+                  <Tooltip title="Edit Post">
+                    <IconButton
+                      classes={{ root: classes.iconButton }}
+                      disableRipple
+                      onClick={() => this.handleEditPost(content)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  </Tooltip>
+                )}
+                {this.props.isAdmin && (
+                  <Tooltip title="Delete Post">
+                    <IconButton
+                      classes={{ root: classes.iconButton }}
+                      disableRipple
+                      onClick={() => this.props.handleDeletePost(content.id)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
+                )}
               </div>
               <img className={classes.image} src={content.image} alt="title" />
               <Typography variant="display2" align="center">

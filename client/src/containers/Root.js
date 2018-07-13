@@ -94,6 +94,7 @@ class Root extends Component {
               <PropsRoute
                 path="/all-posts"
                 component={AllPostsContainer}
+                isAdmin={this.state.admin && Admin.isAdmin}
                 handleBlog={this.handleBlog}
               />
               <Route path="/post/:postId" component={Post} />
