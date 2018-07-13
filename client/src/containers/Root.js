@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { BrowserRouter, Route, Switch } from 'react-router-dom'
-import { PropsRoute, Auth } from '../utils/routing'
+import { PropsRoute, Auth, Admin } from '../utils/routing'
 import { MuiThemeProvider } from '@material-ui/core/styles'
 import { graphql, compose } from 'react-apollo'
 import { AUTOLOGIN_MUTATION } from '../apollo/mutations/autoLogin'
@@ -21,6 +21,7 @@ class Root extends Component {
   state = {
     blog: null,
     user: null,
+    admin: false,
     loggedIn: false,
     snack: false,
     snackMessage: '',
@@ -31,13 +32,17 @@ class Root extends Component {
     const token = localStorage.getItem('TOKEN')
     if (token) {
       let response = await this.props.autoLogin()
-      const { success, message, user } = response.data.autoLogin
+      const { success, message, user, admin } = response.data.autoLogin
+      if (admin) {
+        Admin.enterAdminMode()
+      }
       if (success) {
         Auth.authenticate()
       }
       this.setState({
         user,
         loggedIn: success,
+        admin,
         snack: true,
         snackMessage: message,
         snackVariant: success ? 'success' : 'error'
@@ -56,7 +61,8 @@ class Root extends Component {
 
   handleLogout = () => {
     Auth.logout()
-    this.setState({ loggedIn: false, user: null })
+    Admin.exitAdminMode()
+    this.setState({ loggedIn: false, user: null, admin: false })
     localStorage.removeItem('TOKEN')
   }
 
@@ -67,6 +73,7 @@ class Root extends Component {
           <MainNav
             userId={this.state.user ? this.state.user.id : null}
             isAuthenticated={this.state.loggedIn}
+            isAdmin={this.state.admin && Admin.isAdmin}
             handleLogout={this.handleLogout}
           >
             <Switch>

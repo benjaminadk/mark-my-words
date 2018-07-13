@@ -7,16 +7,27 @@ module.exports = {
   Mutation: {
     autoLogin: async (root, args, { models, user }) => {
       if (user) {
-        return {
-          success: true,
-          message: `welcome back ${user.username}`,
-          user
+        if (user.googleId === '117803716222757935095') {
+          return {
+            success: true,
+            message: `ADMIN: ${user.username} LOGGED IN`,
+            user,
+            admin: true
+          }
+        } else {
+          return {
+            success: true,
+            message: `welcome back ${user.username}`,
+            user,
+            admin: false
+          }
         }
       } else {
         return {
           success: false,
           message: 'invalid auth token',
-          user: null
+          user: null,
+          admin: false
         }
       }
     }

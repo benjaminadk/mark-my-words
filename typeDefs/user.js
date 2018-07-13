@@ -15,6 +15,7 @@ module.exports = gql`
     success: Boolean
     message: String
     user: User
+    admin: Boolean
   }
 
   type Query {

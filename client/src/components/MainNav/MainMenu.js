@@ -13,28 +13,61 @@ import PieChartIcon from '@material-ui/icons/PieChart'
 import PersonIcon from '@material-ui/icons/Person'
 
 const items = [
-  { name: 'Home', icon: <HomeIcon />, path: '/' },
-  { name: 'Latest Post', icon: <NewIcon />, path: '/latest-post' },
-  { name: 'New Post', icon: <AddIcon />, path: '/new-post' },
-  { name: 'View Posts', icon: <ViewIcon />, path: '/all-posts' },
-  { name: 'Analytics', icon: <PieChartIcon />, path: '/analytics' },
-  { name: 'Photos', icon: <PhotoLibIcon />, path: '/photos' }
+  { name: 'Home', icon: <HomeIcon />, path: '/', adminOnly: false },
+  {
+    name: 'Latest Post',
+    icon: <NewIcon />,
+    path: '/latest-post',
+    adminOnly: false
+  },
+  { name: 'New Post', icon: <AddIcon />, path: '/new-post', adminOnly: true },
+  {
+    name: 'View Posts',
+    icon: <ViewIcon />,
+    path: '/all-posts',
+    adminOnly: false
+  },
+  {
+    name: 'Analytics',
+    icon: <PieChartIcon />,
+    path: '/analytics',
+    adminOnly: true
+  },
+  { name: 'Photos', icon: <PhotoLibIcon />, path: '/photos', adminOnly: true }
 ]
 
 const styles = theme => ({})
 
-const MainMenu = ({ classes, userId, handleNavigation }) => (
+const MainMenu = ({ classes, userId, isAdmin, handleNavigation }) => (
   <List component="nav" disablePadding>
-    {items.map(item => (
-      <ListItem
-        key={item.name}
-        onClick={() => handleNavigation(item.path)}
-        button
-      >
-        <ListItemIcon>{item.icon}</ListItemIcon>
-        <ListItemText primary={item.name} />
-      </ListItem>
-    ))}
+    {items.map(item => {
+      if (isAdmin) {
+        return (
+          <ListItem
+            key={item.name}
+            onClick={() => handleNavigation(item.path)}
+            button
+          >
+            <ListItemIcon>{item.icon}</ListItemIcon>
+            <ListItemText primary={item.name} />
+          </ListItem>
+        )
+      } else {
+        if (item.adminOnly) return null
+        else {
+          return (
+            <ListItem
+              key={item.name}
+              onClick={() => handleNavigation(item.path)}
+              button
+            >
+              <ListItemIcon>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.name} />
+            </ListItem>
+          )
+        }
+      }
+    })}
     {userId && (
       <ListItem onClick={() => handleNavigation(`/user/${userId}`)} button>
         <ListItemIcon>

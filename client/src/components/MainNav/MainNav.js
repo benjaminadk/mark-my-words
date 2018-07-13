@@ -102,7 +102,13 @@ class MainNav extends Component {
   handleNavigation = path => this.props.history.push(path)
 
   render() {
-    const { classes, userId, isAuthenticated, handleLogout } = this.props
+    const {
+      classes,
+      userId,
+      isAuthenticated,
+      isAdmin,
+      handleLogout
+    } = this.props
 
     return (
       <div className={classes.root}>
@@ -127,7 +133,7 @@ class MainNav extends Component {
                 <MenuIcon />
               </IconButton>
               <Typography variant="title" color="inherit" noWrap>
-                Mark My Words
+                {isAdmin ? 'Mark My Words  **ADMIN**' : 'Mark My Words'}
               </Typography>
             </div>
             <div className={classes.topRight}>
@@ -159,6 +165,7 @@ class MainNav extends Component {
           <Divider />
           <MainMenu
             userId={isAuthenticated ? userId : null}
+            isAdmin={isAdmin}
             handleNavigation={this.handleNavigation}
           />
           <Divider />

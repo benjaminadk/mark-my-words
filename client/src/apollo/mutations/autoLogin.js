@@ -13,6 +13,7 @@ export const AUTOLOGIN_MUTATION = gql`
         jwt
         createdAt
       }
+      admin
     }
   }
 `

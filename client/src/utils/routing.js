@@ -1,6 +1,16 @@
 import React from 'react'
 import { Route, Redirect } from 'react-router-dom'
 
+export const Admin = {
+  isAdmin: false,
+  enterAdminMode() {
+    this.isAdmin = true
+  },
+  exitAdminMode() {
+    this.isAdmin = false
+  }
+}
+
 export const Auth = {
   isAuthenticated: false,
   authenticate() {

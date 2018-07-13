@@ -67,6 +67,27 @@ const styles = theme => ({
   rootCommentInput: {
     marginLeft: '1vw',
     marginRight: '1vw'
+  },
+  commentContainer: {
+    display: 'flex',
+    marginTop: '5vh'
+  },
+  commentMain: {
+    display: 'flex',
+    flexDirection: 'column',
+    marginLeft: '1vw'
+  },
+  commentData: {
+    display: 'flex',
+    alignItems: 'center'
+  },
+  commentUser: {
+    marginRight: '1vw'
+  },
+  replyRoot: {
+    '&:hover': {
+      backgroundColor: 'transparent'
+    }
   }
 })
 
@@ -228,7 +249,8 @@ class LatestPost extends Component {
         variables: {
           text: this.state.comment,
           postId: this.props.data.latestPost.id
-        }
+        },
+        refetchQueries: [{ query: LATEST_POST_QUERY }]
       })
       success = response.data.createComment.success
       message = response.data.createComment.message
@@ -320,11 +342,35 @@ class LatestPost extends Component {
             <div className={classes.comments}>
               {latestPost.comments &&
                 latestPost.comments.map((c, i) => (
-                  <div key={`comment-${i}`} className={classes.comment}>
-                    <Typography>{c.postedBy.username}</Typography>
-                    <Typography>{howLongAgo(c.createdAt)}</Typography>
+                  <div
+                    key={`comment-${i}`}
+                    className={classes.commentContainer}
+                  >
                     <Avatar src={c.postedBy.avatar} alt="commenter" />
-                    <Typography>{c.text}</Typography>
+                    <div className={classes.commentMain}>
+                      <div className={classes.commentData}>
+                        <Typography
+                          variant="body2"
+                          className={classes.commentUser}
+                        >
+                          {c.postedBy.username}
+                        </Typography>
+                        <Typography variant="caption">
+                          {howLongAgo(c.createdAt)}
+                        </Typography>
+                      </div>
+                      <Typography variant="body1">{c.text}</Typography>
+                      <div>
+                        <Button
+                          variant="text"
+                          color="secondary"
+                          mini
+                          classes={{ root: classes.replyRoot }}
+                        >
+                          Reply
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 ))}
             </div>
