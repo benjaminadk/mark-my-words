@@ -5,6 +5,7 @@ import { LATEST_POST_QUERY } from '../apollo/queries/latestPost'
 import { ALL_POSTS_QUERY } from '../apollo/queries/allPosts'
 import { ADD_VIEW_MUTATION } from '../apollo/mutations/addView'
 import { CREATE_COMMENT_MUTATION } from '../apollo/mutations/createComment'
+import { CREATE_SUB_COMMENT_MUTATION } from '../apollo/mutations/createSubComment'
 import { HashLink as Link } from 'react-router-hash-link'
 import Grid from '@material-ui/core/Grid'
 import Typography from '@material-ui/core/Typography'
@@ -75,7 +76,9 @@ const styles = theme => ({
   commentMain: {
     display: 'flex',
     flexDirection: 'column',
-    marginLeft: '1vw'
+    marginLeft: '1vw',
+    marginRight: '.5vw',
+    width: '100%'
   },
   commentData: {
     display: 'flex',
@@ -88,6 +91,12 @@ const styles = theme => ({
     '&:hover': {
       backgroundColor: 'transparent'
     }
+  },
+  subCommentButtons: {
+    display: 'flex'
+  },
+  subCommentButton: {
+    marginRight: '.5vw'
   }
 })
 
@@ -95,6 +104,8 @@ class LatestPost extends Component {
   state = {
     dummy: 0,
     comment: '',
+    subComment: '',
+    subCommentMode: null,
     snack: false,
     snackMessage: '',
     snackVariant: ''
@@ -269,6 +280,39 @@ class LatestPost extends Component {
     }
   }
 
+  handleCreateSubComment = async commentId => {
+    let response, success, message
+    try {
+      response = await this.props.createSubComment({
+        variables: {
+          text: this.state.subComment,
+          commentId
+        },
+        refetchQueries: [{ query: LATEST_POST_QUERY }]
+      })
+      success = response.data.createSubComment.success
+      message = response.data.createSubComment.message
+      this.setState({
+        snack: success,
+        snackMessage: message,
+        snackVariant: 'success',
+        subComment: '',
+        subCommentMode: null
+      })
+    } catch (error) {
+      this.setState({
+        snack: true,
+        snackMessage: message,
+        snackVariant: 'error'
+      })
+    }
+  }
+
+  handleSubCommentMode = i => this.setState({ subCommentMode: i })
+
+  resetSubCommentMode = () =>
+    this.setState({ subComment: '', subCommentMode: null })
+
   handleChange = e => this.setState({ [e.target.name]: e.target.value })
 
   handleSnackClose = () => this.setState({ snack: false })
@@ -280,7 +324,7 @@ class LatestPost extends Component {
       user,
       isAuthenticated
     } = this.props
-    const { comment } = this.state
+    const { comment, subComment, subCommentMode } = this.state
     if (loading || !latestPost) return <Loading />
     return [
       <div key="main">
@@ -360,16 +404,70 @@ class LatestPost extends Component {
                         </Typography>
                       </div>
                       <Typography variant="body1">{c.text}</Typography>
-                      <div>
-                        <Button
-                          variant="text"
-                          color="secondary"
-                          mini
-                          classes={{ root: classes.replyRoot }}
-                        >
-                          Reply
-                        </Button>
-                      </div>
+                      {user &&
+                        isAuthenticated && (
+                          <div>
+                            {subCommentMode === i ? (
+                              <div className={classes.rootComment}>
+                                <Avatar src={user.avatar} alt="profile" />
+                                <TextField
+                                  type="text"
+                                  name="subComment"
+                                  value={subComment}
+                                  onChange={this.handleChange}
+                                  placeholder="Post a reply..."
+                                  fullWidth
+                                  multiline
+                                  rowsMax={5}
+                                  className={classes.rootCommentInput}
+                                />
+                                <div className={classes.subCommentButtons}>
+                                  <Button
+                                    variant="contained"
+                                    color="secondary"
+                                    size="small"
+                                    disabled={!subComment}
+                                    onClick={() =>
+                                      this.handleCreateSubComment(c._id)
+                                    }
+                                    className={classes.subCommentButton}
+                                  >
+                                    Reply
+                                  </Button>
+                                  <Button
+                                    variant="contained"
+                                    size="small"
+                                    onClick={this.resetSubCommentMode}
+                                  >
+                                    Cancel
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div>
+                                {c.subComments.length > 0 && (
+                                  <Button
+                                    variant="text"
+                                    color="primary"
+                                    size="small"
+                                    classes={{ root: classes.replyRoot }}
+                                  >
+                                    View Replies
+                                  </Button>
+                                )}
+                                <Button
+                                  variant="text"
+                                  color="secondary"
+                                  size="small"
+                                  classes={{ root: classes.replyRoot }}
+                                  onClick={() => this.handleSubCommentMode(i)}
+                                >
+                                  Reply
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        )}
                     </div>
                   </div>
                 ))}
@@ -393,5 +491,6 @@ export default compose(
   withStyles(styles),
   graphql(LATEST_POST_QUERY),
   graphql(ADD_VIEW_MUTATION, { name: 'addView' }),
-  graphql(CREATE_COMMENT_MUTATION, { name: 'createComment' })
+  graphql(CREATE_COMMENT_MUTATION, { name: 'createComment' }),
+  graphql(CREATE_SUB_COMMENT_MUTATION, { name: 'createSubComment' })
 )(LatestPost)

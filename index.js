@@ -14,12 +14,17 @@ const {
   mergeTypes,
   mergeResolvers
 } = require('merge-graphql-schemas')
+
 const resolvers = mergeResolvers(
   fileLoader(path.join(__dirname, './resolvers'))
 )
+
 const typeDefs = mergeTypes(fileLoader(path.join(__dirname, './typeDefs')))
 require('./models/connect')()
+
 const models = require('./models')
+const keys = require('./config')
+
 const server = new ApolloServer({
   typeDefs,
   resolvers,
@@ -31,6 +36,7 @@ const server = new ApolloServer({
     return { models, user }
   }
 })
+
 const app = express()
 
 passport.use(googleOauth)
@@ -40,6 +46,13 @@ app.get('/auth/google/callback', googleCallback, googleRedirect)
 
 server.applyMiddleware({ app, path: '/graphql' })
 
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static('client/build'))
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve('client', 'build', 'index.html'))
+  })
+}
+
 const httpServer = http.createServer(app)
 server.installSubscriptionHandlers(httpServer)
-httpServer.listen(3001, () => console.log('SERVER UP'))
+httpServer.listen(keys.PORT, () => console.log('SERVER UP'))

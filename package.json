@@ -1,15 +1,21 @@
 {
-  "name": "blog",
+  "name": "markmywords",
   "version": "1.0.0",
-  "description": "",
+  "description": "personal blog powered by markdown",
   "main": "index.js",
+  "engines": {
+    "node": "10.2.1",
+    "npm": "6.1.0"
+  },
   "scripts": {
     "server": "nodemon index.js",
     "client": "npm run start --prefix client",
-    "start": "concurrently \"npm run server\" \"npm run client\""
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "start": "node index.js",
+    "heroku-postbuild": "cd client && npm install --only=dev && npm install && npm run build"
   },
   "keywords": [],
-  "author": "",
+  "author": "benjaminadk",
   "license": "ISC",
   "devDependencies": {
     "concurrently": "^3.6.0",

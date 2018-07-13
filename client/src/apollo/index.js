@@ -17,7 +17,10 @@ const httpLink = ApolloLink.from([
     if (networkError) console.log(`[Network error]: ${networkError}`)
   }),
   new HttpLink({
-    uri: 'http://localhost:3001/graphql',
+    uri:
+      process.env.NODE_ENV === 'production'
+        ? 'https://markmywordsblog.herokuapp.com/graphql'
+        : 'http://localhost:3001/graphql',
     credentials: 'same-origin'
   })
 ])
@@ -32,7 +35,10 @@ const authMiddleware = new ApolloLink((operation, forward) => {
 })
 
 const wsLink = new WebSocketLink({
-  uri: `ws://localhost:3001/graphql`,
+  uri:
+    process.env.NODE_ENV === 'production'
+      ? 'wss://markmywordsblog.herokuapp.com/graphql'
+      : `ws://localhost:3001/graphql`,
   options: {
     reconnect: true
   }
@@ -55,6 +61,10 @@ const cache = new InMemoryCache({
       case 'Post':
         return object.id
       case 'Image':
+        return object._id
+      case 'User':
+        return object._id
+      case 'Comment':
         return object._id
       default:
         return defaultDataIdFromObject(object)

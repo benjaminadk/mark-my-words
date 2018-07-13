@@ -10,7 +10,10 @@ const googleOauth = new GoogleStrategy(
   {
     clientID: keys.GOOGLE_CLIENT_ID,
     clientSecret: keys.GOOGLE_CLIENT_SECRET,
-    callbackURL: 'http://localhost:3001/auth/google/callback',
+    callbackURL:
+      process.env.NODE_ENV === 'production'
+        ? 'https://markmywordsblog.herokuapp.com/auth/google/callback'
+        : 'http://localhost:3001/auth/google/callback',
     passRequestToCallback: true
   },
   async (request, accessToken, refreshToken, profile, done) => {
@@ -66,12 +69,19 @@ const googleScope = passport.authenticate('google', {
 })
 
 const googleCallback = passport.authenticate('google', {
-  failureRedirect: 'http://localhost:3000/failure/',
+  failureRedirect:
+    process.env.NODE_ENV === 'production'
+      ? 'https://markmywordsblog.herokuapp.com/failure/'
+      : 'http://localhost:3000/failure/',
   session: false
 })
 
 const googleRedirect = (req, res) => {
-  res.redirect(`http://localhost:3000/user/${userId}`)
+  res.redirect(
+    process.env.NODE_ENV === 'production'
+      ? `https://markmywordsblog.herokuapp.com/user/${userId}`
+      : `http://localhost:3000/user/${userId}`
+  )
 }
 
 module.exports = {

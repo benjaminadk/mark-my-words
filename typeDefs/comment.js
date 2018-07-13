@@ -12,5 +12,6 @@ module.exports = gql`
 
   type Mutation {
     createComment(text: String, postId: ID): Payload
+    createSubComment(text: String, commentId: ID): Payload
   }
 `
