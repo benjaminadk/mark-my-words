@@ -118,11 +118,12 @@ module.exports = {
   Mutation: {
     createPost: async (root, args, { models }) => {
       try {
-        const { title, subTitle, body, image, tags } = args
+        const { title, subTitle, body, words, image, tags } = args
         const post = new models.Post({
           title,
           subTitle,
           body,
+          words,
           image,
           tags
         })
@@ -141,9 +142,9 @@ module.exports = {
 
     updatePost: async (root, args, { models }) => {
       try {
-        const { postId, title, subTitle, body, image, tags } = args
+        const { postId, title, subTitle, body, words, image, tags } = args
         const filter = { id: postId }
-        const update = { $set: { title, subTitle, body, image, tags } }
+        const update = { $set: { title, subTitle, body, words, image, tags } }
         await models.Post.findOneAndUpdate(filter, update)
         return {
           success: true,

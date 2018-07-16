@@ -105,7 +105,7 @@ class Root extends Component {
                 component={UserLanding}
                 handleLogin={this.handleLogin}
               />
-              {/*<Route component={NotFound} />*/}
+              <Route component={NotFound} />
             </Switch>
           </MainNav>
         </BrowserRouter>

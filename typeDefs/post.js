@@ -7,6 +7,7 @@ module.exports = gql`
     title: String
     subTitle: String
     body: String
+    words: Int
     image: String
     tags: [String]
     views: [View]
@@ -45,6 +46,7 @@ module.exports = gql`
       title: String
       subTitle: String
       body: String
+      words: Int
       image: String
       tags: [String]
     ): Payload
@@ -54,6 +56,7 @@ module.exports = gql`
       title: String
       subTitle: String
       body: String
+      words: Int
       image: String
       tags: [String]
     ): Payload

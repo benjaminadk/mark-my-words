@@ -7,6 +7,7 @@ export const LATEST_POST_QUERY = gql`
       title
       subTitle
       body
+      words
       image
       tags
       createdAt
@@ -25,6 +26,7 @@ export const LATEST_POST_QUERY = gql`
           postedBy {
             username
             avatar
+            createdAt
           }
         }
       }

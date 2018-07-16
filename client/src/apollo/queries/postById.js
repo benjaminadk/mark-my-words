@@ -7,6 +7,7 @@ export const POST_QUERY = gql`
       title
       subTitle
       body
+      words
       image
       tags
       createdAt

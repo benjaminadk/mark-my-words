@@ -7,6 +7,7 @@ export const ALL_POSTS_QUERY = gql`
       title
       subTitle
       body
+      words
       tags
       image
       views {

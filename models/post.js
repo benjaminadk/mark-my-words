@@ -7,12 +7,13 @@ const postSchema = new Schema({
   title: String,
   subTitle: String,
   body: String,
+  words: Number,
   image: String,
   tags: [String],
   comments: {
     type: [Schema.Types.ObjectId],
     ref: 'comment',
-    autopopulate: true
+    autopopulate: { maxDepth: 2 }
   },
   views: {
     type: [Schema.Types.ObjectId],

@@ -11,6 +11,7 @@ export const ALL_POSTS_PAGINATED_QUERY = gql`
           title
           subTitle
           body
+          words
           tags
           image
           createdAt

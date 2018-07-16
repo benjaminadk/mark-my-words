@@ -5,6 +5,7 @@ export const CREATE_POST_MUTATION = gql`
     $title: String
     $subTitle: String
     $body: String
+    $words: Int
     $image: String
     $tags: [String]
   ) {
@@ -12,6 +13,7 @@ export const CREATE_POST_MUTATION = gql`
       title: $title
       subTitle: $subTitle
       body: $body
+      words: $words
       image: $image
       tags: $tags
     ) {

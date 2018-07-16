@@ -175,9 +175,10 @@ class NewPost extends Component {
   handleCreateBlog = async () => {
     try {
       const { title, subTitle, body, tags } = this.state
+      const words = body.split(' ').length
       let image = await this.handleUploadImage()
       let response = await this.props.createPost({
-        variables: { title, subTitle, body, image, tags },
+        variables: { title, subTitle, body, words, image, tags },
         refetchQueries: [
           {
             query: ALL_POSTS_PAGINATED_QUERY,
@@ -196,6 +197,7 @@ class NewPost extends Component {
   handleUpdateBlog = async () => {
     try {
       const { postId, title, subTitle, image, body, tags, file } = this.state
+      const words = body.split(' ').length
       let imageUrl
       if (file) {
         imageUrl = await this.handleUploadImage()
@@ -206,6 +208,7 @@ class NewPost extends Component {
           title,
           subTitle,
           body,
+          words,
           image: imageUrl ? imageUrl : image,
           tags
         },

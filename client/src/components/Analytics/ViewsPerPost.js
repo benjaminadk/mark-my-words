@@ -29,10 +29,10 @@ export default class ViewsPerPost extends Component {
     const { viewsPerPost } = this.props
     return (
       <XYPlot
-        margin={{ left: 100, bottom: 100 }}
+        margin={{ left: 100, bottom: 120 }}
         height={400}
         width={600}
-        yDomain={[0, 20]}
+        yDomain={[0, 100]}
         xType="ordinal"
         colorType="category"
         colorRange={colorPalette}

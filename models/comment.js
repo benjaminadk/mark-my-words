@@ -8,12 +8,12 @@ const commentSchema = new Schema({
   subComments: {
     type: [Schema.Types.ObjectId],
     ref: 'comment',
-    autopopulate: true
+    autopopulate: { maxDepth: 3 }
   },
   postedBy: {
     type: Schema.Types.ObjectId,
     ref: 'user',
-    autopopulate: true
+    autopopulate: { maxDepth: 1 }
   },
   createdAt: {
     type: Date,
