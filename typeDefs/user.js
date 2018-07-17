@@ -24,5 +24,7 @@ module.exports = gql`
 
   type Mutation {
     autoLogin: UserPayload
+    editUsername(username: String): Payload
+    editEmail(email: String): Payload
   }
 `

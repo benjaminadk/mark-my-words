@@ -10,6 +10,7 @@ export const POST_QUERY = gql`
       words
       image
       tags
+      fire
       createdAt
       comments {
         _id

@@ -7,24 +7,25 @@ import {
   YAxis,
   HorizontalGridLines,
   VerticalGridLines,
-  VerticalBarSeries,
+  MarkSeries,
   Crosshair
 } from 'react-vis'
 
-const colorPalette = ['#c1272d', '#ffce00', '#3F51B5']
+const colorPalette = ['#ffce00', '#ffa100', '#c1272d']
 
 const styles = theme => ({
   root: {
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center'
+    alignItems: 'center',
+    marginTop: '10vh'
   },
   title: {
     marginLeft: '5vw'
   }
 })
 
-class ViewsPerPost extends Component {
+class FlamesPerPost extends Component {
   state = {
     crosshairValues: []
   }
@@ -36,30 +37,30 @@ class ViewsPerPost extends Component {
 
   formatCrosshairTitle = values => ({ title: 'post', value: values[0].x })
 
-  formatCrosshairItems = values => [{ title: 'views', value: values[0].y }]
+  formatCrosshairItems = values => [{ title: 'fire', value: values[0].y }]
 
   render() {
-    const { viewsPerPost, maxViews, classes } = this.props
+    const { firePerPost, maxFire, classes } = this.props
     return (
       <div className={classes.root}>
         <Typography variant="display1" className={classes.title}>
-          Views Per Post
+          Fire Per Post
         </Typography>
         <XYPlot
           margin={{ left: 100, bottom: 120 }}
           height={400}
           width={600}
-          yDomain={[0, maxViews * 1.25]}
+          yDomain={[0, maxFire * 1.25]}
           xType="ordinal"
           colorType="category"
           colorRange={colorPalette}
         >
           <HorizontalGridLines />
           <VerticalGridLines />
-          <XAxis tickTotal={viewsPerPost.length} tickLabelAngle={-55} />
-          <YAxis title="Views" />
-          <VerticalBarSeries
-            data={viewsPerPost}
+          <XAxis tickTotal={firePerPost.length} tickLabelAngle={-55} />
+          <YAxis title="Fire" />
+          <MarkSeries
+            data={firePerPost}
             onValueMouseOver={this.handleMouseOver}
             onValueMouseOut={this.handleMouseOut}
           />
@@ -75,4 +76,4 @@ class ViewsPerPost extends Component {
   }
 }
 
-export default withStyles(styles)(ViewsPerPost)
+export default withStyles(styles)(FlamesPerPost)

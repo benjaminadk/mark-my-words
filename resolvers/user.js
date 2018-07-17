@@ -30,6 +30,40 @@ module.exports = {
           admin: false
         }
       }
+    },
+
+    editUsername: async (root, { username }, { models, user }) => {
+      try {
+        const filter = { _id: user.id }
+        const update = { $set: { username } }
+        await models.User.findOneAndUpdate(filter, update)
+        return {
+          success: true,
+          message: `new username set as ${username}`
+        }
+      } catch (error) {
+        return {
+          success: false,
+          message: 'error changing username'
+        }
+      }
+    },
+
+    editEmail: async (root, { email }, { models, user }) => {
+      try {
+        const filter = { _id: user.id }
+        const update = { $set: { email } }
+        await models.User.findOneAndUpdate(filter, update)
+        return {
+          success: true,
+          message: `new email set as ${email}`
+        }
+      } catch (error) {
+        return {
+          success: false,
+          message: 'error changing email'
+        }
+      }
     }
   }
 }

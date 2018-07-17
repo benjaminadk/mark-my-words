@@ -14,6 +14,7 @@ export const ALL_POSTS_PAGINATED_QUERY = gql`
           words
           tags
           image
+          fire
           createdAt
         }
       }

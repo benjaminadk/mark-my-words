@@ -192,6 +192,23 @@ module.exports = {
       }
     },
 
+    addFire: async (root, { postId, plus }, { models }) => {
+      try {
+        const filter = { id: postId }
+        const update = { $inc: { fire: plus } }
+        await models.Post.findOneAndUpdate(filter, update)
+        return {
+          success: true,
+          message: `${plus} fire points added to post`
+        }
+      } catch (error) {
+        return {
+          success: false,
+          message: 'error adding fire to post'
+        }
+      }
+    },
+
     dropDatabase: async () => {
       try {
         await mongoose.connection.dropDatabase()

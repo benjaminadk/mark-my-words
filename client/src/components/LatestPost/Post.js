@@ -22,10 +22,15 @@ import 'highlight.js/styles/atom-one-dark.css'
 import '../../styles/post.css'
 import { formatDate } from '../../utils/formatDate'
 import { readTime } from '../../utils/readTime'
+import WhatsHot from './WhatsHot'
 
 const styles = theme => ({
   root: {
     backgroundColor: '#e8e8e8'
+  },
+  empty: {
+    display: 'flex',
+    justifyContent: 'center'
   },
   container: {
     padding: theme.spacing.unit * 3,
@@ -92,7 +97,12 @@ class Post extends Component {
           <Typography variant="title">{children}</Typography>
         ),
         p: ({ children }) => (
-          <Typography variant="body2">{children}</Typography>
+          <div>
+            <Typography variant="body2" align="justify">
+              {children}
+            </Typography>
+            <br />
+          </div>
         ),
         blockquote: ({ children }) => (
           <div style={{ display: 'flex' }}>
@@ -185,10 +195,25 @@ class Post extends Component {
   }
 
   render() {
-    const { classes, latestPost } = this.props
+    const {
+      classes,
+      latestPost,
+      hotCount,
+      hotCounter,
+      handleHCMouseDown,
+      handleHCMouseUp
+    } = this.props
     return (
       <Grid container className={classes.root}>
-        <Grid item xs={2} className={classes.empty} />
+        <Grid item xs={2} className={classes.empty}>
+          <WhatsHot
+            fire={latestPost.fire}
+            hotCount={hotCount}
+            hotCounter={hotCounter}
+            handleHCMouseDown={handleHCMouseDown}
+            handleHCMouseUp={handleHCMouseUp}
+          />
+        </Grid>
         <Grid item xs={8} className={classes.container}>
           <div className={classes.stats}>
             <Typography variant="body1">

@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import { graphql, compose } from 'react-apollo'
 import { USER_BY_ID_QUERY } from '../apollo/queries/userById'
+import { EDIT_USERNAME_MUTATION } from '../apollo/mutations/editUsername'
+import { EDIT_EMAIL_MUTATION } from '../apollo/mutations/editEmail'
 import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
@@ -15,6 +17,7 @@ import TextField from '@material-ui/core/TextField'
 import Avatar from '@material-ui/core/Avatar'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import SendIcon from '@material-ui/icons/Send'
+import Snack from '../components/Snack'
 import Loading from '../components/Loading'
 
 const perks = [
@@ -45,7 +48,8 @@ const styles = theme => ({
     marginTop: '5vh'
   },
   expansionContainer: {
-    marginTop: '5vh'
+    marginTop: '5vh',
+    marginBottom: '5vh'
   },
   profileDetails: {
     display: 'flex',
@@ -73,7 +77,10 @@ class UserLanding extends Component {
     username: '',
     usernameEdit: false,
     email: '',
-    emailEdit: false
+    emailEdit: false,
+    snack: false,
+    snackVariant: '',
+    snackMessage: ''
   }
 
   componentDidUpdate(prevProps) {
@@ -91,9 +98,53 @@ class UserLanding extends Component {
   toggleUsernameEdit = () =>
     this.setState({ usernameEdit: !this.state.usernameEdit })
 
+  handleEditUsername = async () => {
+    const { username } = this.state
+    let response = await this.props.editUsername({
+      variables: { username },
+      refetchQueries: [
+        {
+          query: USER_BY_ID_QUERY,
+          variables: { userId: this.props.match.params.userId }
+        }
+      ]
+    })
+    const { success, message } = response.data.editUsername
+    await this.setState({
+      snack: true,
+      snackVariant: success ? 'success' : 'error',
+      snackMessage: message,
+      username: '',
+      usernameEdit: false
+    })
+  }
+
+  handleEditEmail = async () => {
+    const { email } = this.state
+    let response = await this.props.editEmail({
+      variables: { email },
+      refetchQueries: [
+        {
+          query: USER_BY_ID_QUERY,
+          variables: { userId: this.props.match.params.userId }
+        }
+      ]
+    })
+    const { success, message } = response.data.editEmail
+    await this.setState({
+      snack: true,
+      snackVariant: success ? 'success' : 'error',
+      snackMessage: message,
+      email: '',
+      emailEdit: false
+    })
+  }
+
   toggleEmailEdit = () => this.setState({ emailEdit: !this.state.emailEdit })
 
   toggleAvatarEdit = () => {}
+
+  handleSnackClose = () => this.setState({ snack: false })
 
   render() {
     const {
@@ -101,9 +152,11 @@ class UserLanding extends Component {
       classes
     } = this.props
     const { expanded, username, usernameEdit, email, emailEdit } = this.state
-    if (loading) return <Loading />
-    return (
-      <div className={classes.root}>
+    if (loading) {
+      return <Loading />
+    }
+    return [
+      <div key="main" className={classes.root}>
         <div className={classes.greeting}>
           <img
             src="https://s3-us-west-1.amazonaws.com/simple-blogger-react/avatar.png"
@@ -162,6 +215,7 @@ class UserLanding extends Component {
                       variant="outlined"
                       color="secondary"
                       className={classes.profileSave}
+                      onClick={this.handleEditUsername}
                     >
                       Save
                     </Button>
@@ -199,6 +253,7 @@ class UserLanding extends Component {
                     <Button
                       variant="outlined"
                       color="secondary"
+                      onClick={this.handleEditEmail}
                       className={classes.profileSave}
                     >
                       Save
@@ -239,8 +294,15 @@ class UserLanding extends Component {
             </ExpansionPanelDetails>
           </ExpansionPanel>
         </div>
-      </div>
-    )
+      </div>,
+      <Snack
+        key="snack"
+        snack={this.state.snack}
+        snackVariant={this.state.snackVariant}
+        snackMessage={this.state.snackMessage}
+        handleClose={this.handleSnackClose}
+      />
+    ]
   }
 }
 
@@ -248,5 +310,7 @@ export default compose(
   withStyles(styles),
   graphql(USER_BY_ID_QUERY, {
     options: props => ({ variables: { userId: props.match.params.userId } })
-  })
+  }),
+  graphql(EDIT_USERNAME_MUTATION, { name: 'editUsername' }),
+  graphql(EDIT_EMAIL_MUTATION, { name: 'editEmail' })
 )(UserLanding)

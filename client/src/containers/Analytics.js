@@ -3,32 +3,19 @@ import { withStyles } from '@material-ui/core/styles'
 import { graphql, compose } from 'react-apollo'
 import { ALL_POSTS_QUERY } from '../apollo/queries/allPosts'
 import Loading from '../components/Loading'
-import Card from '@material-ui/core/Card'
-import Typography from '@material-ui/core/Typography'
+import InfoCard from '../components/Analytics/InfoCard'
 import ViewsPerPost from '../components/Analytics/ViewsPerPost'
+import FlamesPerPost from '../components/Analytics/FlamesPerPost'
 import 'react-vis/dist/style.css'
 //import moment from 'moment'
 
 const styles = theme => ({
   root: {
     display: 'flex',
-    justifyContent: 'space-around',
-    marginTop: '5vh',
-    height: '100%'
-  },
-  card: {
-    display: 'flex',
     flexDirection: 'column',
-    padding: '1vw',
-    height: '25%'
-  },
-  cardContent: {
-    marginTop: '2.5vh'
-  },
-  cardInfo: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center'
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    marginTop: '5vh'
   }
 })
 
@@ -37,7 +24,9 @@ class Analytics extends Component {
     totalPosts: null,
     totalViews: null,
     viewsPerPost: [],
-    titles: []
+    firePerPost: [],
+    maxViews: 0,
+    maxFire: 0
   }
 
   componentWillMount() {
@@ -66,14 +55,42 @@ class Analytics extends Component {
       })
     })
 
-    // get total views per post
-    const viewsPerPost = allPosts.map((p, i) => ({
-      x: p.title,
-      y: p.views.length,
-      color: i % 3
-    }))
-    const titles = allPosts.map(p => p.title)
-    this.setState({ totalPosts, totalViews, viewsPerPost, titles })
+    // get total views per post and max views
+    let maxViews = 0
+    const viewsPerPost = allPosts.map((p, i) => {
+      if (p.views.length > maxViews) {
+        maxViews = p.views.length
+      }
+      return {
+        x: p.title,
+        y: p.views.length,
+        color: i % 3
+      }
+    })
+
+    // get fire (likes) per post and max fire
+    let maxFire = 0
+    const firePerPost = allPosts.map((p, i) => {
+      if (p.fire > maxFire) {
+        maxFire = p.fire
+      }
+      return {
+        x: p.title,
+        y: p.fire,
+        size: p.fire * 2,
+        color: i % 3
+      }
+    })
+
+    // set everything to state
+    this.setState({
+      totalPosts,
+      totalViews,
+      viewsPerPost,
+      maxViews,
+      firePerPost,
+      maxFire
+    })
   }
 
   render() {
@@ -84,26 +101,17 @@ class Analytics extends Component {
     if (loading) return <Loading />
     return (
       <div className={classes.root}>
-        <Card className={classes.card}>
-          <Typography variant="title">Overall Statistics</Typography>
-          <div className={classes.cardContent}>
-            <div className={classes.cardInfo}>
-              <Typography variant="body2">Total Posts: </Typography>
-              <Typography variant="display1">
-                {this.state.totalPosts}
-              </Typography>
-            </div>
-            <div className={classes.cardInfo}>
-              <Typography variant="body2">Total Views: </Typography>
-              <Typography variant="display1">
-                {this.state.totalViews}
-              </Typography>
-            </div>
-          </div>
-        </Card>
+        <InfoCard
+          totalPosts={this.state.totalPosts}
+          totalViews={this.state.totalViews}
+        />
         <ViewsPerPost
           viewsPerPost={this.state.viewsPerPost}
-          titles={this.state.titles}
+          maxViews={this.state.maxViews}
+        />
+        <FlamesPerPost
+          firePerPost={this.state.firePerPost}
+          maxFire={this.state.maxFire}
         />
       </div>
     )

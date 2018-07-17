@@ -13,6 +13,7 @@ export const ALL_POSTS_QUERY = gql`
       views {
         createdAt
       }
+      fire
       createdAt
     }
   }

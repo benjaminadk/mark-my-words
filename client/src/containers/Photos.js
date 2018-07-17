@@ -2,15 +2,19 @@ import React, { Component } from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import { graphql, compose } from 'react-apollo'
 import { ALL_IMAGES_QUERY } from '../apollo/queries/allImages'
+import { S3_SIGN_MUTATION } from '../apollo/mutations/s3Sign'
+import { CREATE_IMAGE_MUTATION } from '../apollo/mutations/createImage'
 import { DELETE_IMAGE_MUTATION } from '../apollo/mutations/deleteImage'
 import Card from '@material-ui/core/Card'
 import Typography from '@material-ui/core/Typography'
 import Button from '@material-ui/core/Button'
+import Upload from '../components/Photos/Upload'
 import Loading from '../components/Loading'
 import Snack from '../components/Snack'
 import UploadIcon from '@material-ui/icons/Publish'
 import { copy } from '../utils/copy'
 import uniqBy from 'lodash/uniqBy'
+import axios from 'axios'
 
 const styles = theme => ({
   container: {
@@ -56,26 +60,12 @@ const styles = theme => ({
 
 class Photos extends Component {
   state = {
+    open: false,
+    file: null,
+    progress: 0,
     snack: false,
     snackMessage: '',
     snackVariant: ''
-  }
-
-  handleDeleteImage = async image => {
-    var areTheySure = window.confirm(
-      `Delete Image ${image.title}? This action is permanent.`
-    )
-    if (!areTheySure) return
-    let response = await this.props.deleteImage({
-      variables: { imageId: image.id, imageUrl: image.url },
-      refetchQueries: [{ query: ALL_IMAGES_QUERY }]
-    })
-    const { success, message } = response.data.deleteImage
-    this.setState({
-      snack: true,
-      snackMessage: message,
-      snackVariant: success ? 'success' : 'error'
-    })
   }
 
   handleCopy = text => {
@@ -93,6 +83,57 @@ class Photos extends Component {
         snackVariant: 'error'
       })
     }
+  }
+
+  handleOpenUpload = () => this.setState({ open: true })
+
+  handleCloseUpload = () => this.setState({ open: false })
+
+  handleDrop = files => this.setState({ file: files[0], progress: 0 })
+
+  handleUploadImage = async () => {
+    const { file } = this.state
+    let response = await this.props.s3Sign({
+      variables: { filename: file.name, filetype: file.type }
+    })
+    const { requestUrl, imageUrl } = response.data.s3Sign
+    const options = {
+      headers: { 'Content-Type': file.type },
+      onUploadProgress: progressEvent => {
+        var percentCompleted = Math.round(
+          (progressEvent.loaded * 100) / progressEvent.total
+        )
+        this.setState({ progress: percentCompleted })
+      }
+    }
+    await axios.put(requestUrl, file, options)
+    let response2 = await this.props.createImage({
+      variables: { url: imageUrl, title: file.name },
+      refetchQueries: [{ query: ALL_IMAGES_QUERY }]
+    })
+    const { success, message } = response2.data.createImage
+    await this.setState({
+      snack: true,
+      snackMessage: message,
+      snackVariant: success ? 'success' : 'error'
+    })
+  }
+
+  handleDeleteImage = async image => {
+    var areTheySure = window.confirm(
+      `Delete Image ${image.title}? This action is permanent.`
+    )
+    if (!areTheySure) return
+    let response = await this.props.deleteImage({
+      variables: { imageId: image.id, imageUrl: image.url },
+      refetchQueries: [{ query: ALL_IMAGES_QUERY }]
+    })
+    const { success, message } = response.data.deleteImage
+    this.setState({
+      snack: true,
+      snackMessage: message,
+      snackVariant: success ? 'success' : 'error'
+    })
   }
 
   handleSnackClose = () => this.setState({ snack: false })
@@ -136,7 +177,12 @@ class Photos extends Component {
               </div>
             </Card>
           ))}
-        <Button variant="extendedFab" color="primary" className={classes.fab}>
+        <Button
+          variant="extendedFab"
+          color="primary"
+          className={classes.fab}
+          onClick={this.handleOpenUpload}
+        >
           <UploadIcon />Upload
         </Button>
       </div>,
@@ -146,6 +192,13 @@ class Photos extends Component {
         variant={this.state.snackVariant}
         message={this.state.snackMessage}
         handleClose={this.handleSnackClose}
+      />,
+      <Upload
+        open={this.state.open}
+        progress={this.state.progress}
+        file={this.state.file}
+        handleDrop={this.handleDrop}
+        handleUploadImage={this.handleUploadImage}
       />
     ]
   }
@@ -154,5 +207,7 @@ class Photos extends Component {
 export default compose(
   withStyles(styles),
   graphql(ALL_IMAGES_QUERY),
+  graphql(S3_SIGN_MUTATION, { name: 's3Sign' }),
+  graphql(CREATE_IMAGE_MUTATION, { name: 'createImage' }),
   graphql(DELETE_IMAGE_MUTATION, { name: 'deleteImage' })
 )(Photos)

@@ -11,6 +11,7 @@ module.exports = gql`
     image: String
     tags: [String]
     views: [View]
+    fire: Int
     comments: [Comment]
     createdAt: String
   }
@@ -64,6 +65,8 @@ module.exports = gql`
     deletePost(postId: ID): Payload
 
     addView(postId: ID): Payload
+
+    addFire(postId: ID, plus: Int): Payload
 
     dropDatabase: Payload
   }
