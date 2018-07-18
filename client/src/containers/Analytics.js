@@ -77,7 +77,7 @@ class Analytics extends Component {
       return {
         x: p.title,
         y: p.fire,
-        size: p.fire * 2,
+        size: p.fire,
         color: i % 3
       }
     })

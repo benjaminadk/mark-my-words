@@ -10,6 +10,7 @@ import ViewIcon from '@material-ui/icons/ViewComfy'
 import PhotoLibIcon from '@material-ui/icons/PhotoLibrary'
 import NewIcon from '@material-ui/icons/FiberNew'
 import PieChartIcon from '@material-ui/icons/PieChart'
+import SettingsIcon from '@material-ui/icons/Settings'
 import PersonIcon from '@material-ui/icons/Person'
 
 const items = [
@@ -33,7 +34,13 @@ const items = [
     path: '/analytics',
     adminOnly: true
   },
-  { name: 'Photos', icon: <PhotoLibIcon />, path: '/photos', adminOnly: true }
+  { name: 'Photos', icon: <PhotoLibIcon />, path: '/photos', adminOnly: true },
+  {
+    name: 'About Author',
+    icon: <PersonIcon />,
+    path: '/about',
+    adminOnly: false
+  }
 ]
 
 const styles = theme => ({})
@@ -71,7 +78,7 @@ const MainMenu = ({ classes, userId, isAdmin, handleNavigation }) => (
     {userId && (
       <ListItem onClick={() => handleNavigation(`/user/${userId}`)} button>
         <ListItemIcon>
-          <PersonIcon />
+          <SettingsIcon />
         </ListItemIcon>
         <ListItemText primary="User Profile" />
       </ListItem>

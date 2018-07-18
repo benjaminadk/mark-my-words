@@ -61,6 +61,9 @@ class FlamesPerPost extends Component {
           <YAxis title="Fire" />
           <MarkSeries
             data={firePerPost}
+            sizeRange={[5, 50]}
+            opacity="0.8"
+            strokeWidth={2}
             onValueMouseOver={this.handleMouseOver}
             onValueMouseOut={this.handleMouseOut}
           />

@@ -13,6 +13,7 @@ import IconButton from '@material-ui/core/IconButton'
 import Button from '@material-ui/core/Button'
 import MenuIcon from '@material-ui/icons/Menu'
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft'
+import NotificationIcon from '@material-ui/icons/Notifications'
 import MainMenu from './MainMenu'
 
 const drawerWidth = 240
@@ -49,7 +50,12 @@ const styles = theme => ({
     display: 'flex',
     alignItems: 'center'
   },
-  topRight: {},
+  topRight: {
+    marginRight: '2.5vw'
+  },
+  notification: {
+    marginRight: '2.5vw'
+  },
   menuButton: {
     marginLeft: 12,
     marginRight: 36
@@ -60,6 +66,8 @@ const styles = theme => ({
   drawerPaper: {
     position: 'relative',
     whiteSpace: 'nowrap',
+    height: '100%',
+    minHeight: '100vh',
     width: drawerWidth,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
@@ -107,6 +115,8 @@ class MainNav extends Component {
       userId,
       isAuthenticated,
       isAdmin,
+      handleOpenPopper,
+      setAnchorEl,
       handleLogout
     } = this.props
 
@@ -137,6 +147,15 @@ class MainNav extends Component {
               </Typography>
             </div>
             <div className={classes.topRight}>
+              {isAuthenticated && (
+                <IconButton
+                  color="inherit"
+                  onClick={handleOpenPopper}
+                  className={classes.notification}
+                >
+                  <NotificationIcon />
+                </IconButton>
+              )}
               <Button
                 href={isAuthenticated ? null : '/auth/google'}
                 onClick={isAuthenticated ? handleLogout : null}

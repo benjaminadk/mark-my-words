@@ -26,11 +26,13 @@ import Highlight from 'react-highlight'
 import 'highlight.js/styles/atom-one-dark.css'
 
 const styles = theme => ({
-  empty: {
+  root: {
     backgroundColor: '#e8e8e8'
   },
   blog: {
     padding: theme.spacing.unit * 3,
+    marginTop: '10vh',
+    marginBottom: '10vh',
     backgroundColor: '#FFFFFF'
   },
   imageContainer: {
@@ -92,7 +94,12 @@ class Post extends Component {
           <Typography variant="title">{children}</Typography>
         ),
         p: ({ children }) => (
-          <Typography variant="body2">{children}</Typography>
+          <div>
+            <Typography variant="body2" align="justify">
+              {children}
+            </Typography>
+            <br />
+          </div>
         ),
         blockquote: ({ children }) => (
           <div style={{ display: 'flex' }}>

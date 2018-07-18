@@ -3,6 +3,7 @@ import { withStyles } from '@material-ui/core/styles'
 import { compose, graphql } from 'react-apollo'
 import { ALL_POSTS_PAGINATED_QUERY } from '../apollo/queries/allPostsPaginated'
 import { ALL_POSTS_QUERY } from '../apollo/queries/allPosts'
+import { LATEST_POST_QUERY } from '../apollo/queries/latestPost'
 import { ALL_IMAGES_QUERY } from '../apollo/queries/allImages'
 import { CREATE_POST_MUTATION } from '../apollo/mutations/createPost'
 import { UPDATE_POST_MUTATION } from '../apollo/mutations/updatePost'
@@ -184,7 +185,8 @@ class NewPost extends Component {
             query: ALL_POSTS_PAGINATED_QUERY,
             variables: { first: 5, after: '' }
           },
-          { query: ALL_POSTS_QUERY }
+          { query: ALL_POSTS_QUERY },
+          { query: LATEST_POST_QUERY }
         ]
       })
       const { success, message } = response.data.createPost

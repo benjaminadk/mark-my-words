@@ -23,7 +23,7 @@ const styles = theme => ({
 
 const InfoCard = ({ classes, totalPosts, totalViews }) => (
   <Card className={classes.card}>
-    <Typography variant="title">Overall Statistics</Typography>
+    <Typography variant="display1">Overall Statistics</Typography>
     <div className={classes.cardContent}>
       <div className={classes.cardInfo}>
         <Typography variant="body2">Total Posts: </Typography>
