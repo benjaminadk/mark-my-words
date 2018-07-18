@@ -6,6 +6,7 @@ import DialogActions from '@material-ui/core/DialogActions'
 import Dialog from '@material-ui/core/Dialog'
 import Button from '@material-ui/core/Button'
 import LinearProgress from '@material-ui/core/LinearProgress'
+import Typography from '@material-ui/core/Typography'
 import Dropzone from 'react-dropzone'
 
 const styles = theme => ({
@@ -43,16 +44,26 @@ const Upload = ({
   file,
   progress,
   handleDrop,
-  handleUploadImage
+  handleUploadImage,
+  handleCloseUpload
 }) => (
-  <Dialog open={open}>
+  <Dialog open={open} onClose={handleCloseUpload}>
     <DialogTitle>Upload An Image</DialogTitle>
     <DialogContent className={classes.content}>
       <Dropzone
         accept="image/*"
         className={classes.dropzone}
         onDrop={handleDrop}
-      />
+        style={{
+          backgroundImage: file && `url(${file.preview})`
+        }}
+      >
+        {!file && (
+          <Typography align="center" variant="body2" style={{ padding: '1vw' }}>
+            Click || Drag & Drop
+          </Typography>
+        )}
+      </Dropzone>
       <LinearProgress
         variant="determinate"
         value={progress}
@@ -60,10 +71,17 @@ const Upload = ({
       />
     </DialogContent>
     <DialogActions>
-      <Button variant="contained" color="secondary" onClick={handleUploadImage}>
+      <Button
+        variant="contained"
+        color="secondary"
+        onClick={handleUploadImage}
+        disabled={!file}
+      >
         Upload
       </Button>
-      <Button variant="contained">Cancel</Button>
+      <Button variant="contained" onClick={handleCloseUpload}>
+        Close
+      </Button>
     </DialogActions>
   </Dialog>
 )

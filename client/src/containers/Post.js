@@ -24,7 +24,6 @@ import Remarkable from 'remarkable'
 import RemarkableReactRenderer from 'remarkable-react'
 import Highlight from 'react-highlight'
 import 'highlight.js/styles/atom-one-dark.css'
-import '../styles/post.css'
 
 const styles = theme => ({
   empty: {
@@ -122,12 +121,22 @@ class Post extends Component {
         img: ({ alt, src, title }) => {
           if (title) {
             return (
-              <Tooltip title={title}>
-                <img src={src} alt={alt} className="Post-img" />
-              </Tooltip>
+              <div className={this.props.classes.imageContainer}>
+                <Tooltip title={title}>
+                  <img
+                    src={src}
+                    alt={alt}
+                    className={this.props.classes.image}
+                  />
+                </Tooltip>
+              </div>
             )
           } else {
-            return <img src={src} alt={alt} className="Post-img" />
+            return (
+              <div className={this.props.classes.imageContainer}>
+                <img src={src} alt={alt} className={this.props.classes.image} />
+              </div>
+            )
           }
         },
         table: ({ children }) => <Table>{children}</Table>,

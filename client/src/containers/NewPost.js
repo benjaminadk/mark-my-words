@@ -152,8 +152,7 @@ class NewPost extends Component {
   handleUploadImage = async () => {
     const { file } = this.state
     let response = await this.props.s3Sign({
-      variables: { filename: file.name, filetype: file.type },
-      refetchQueries: [{ query: ALL_IMAGES_QUERY }]
+      variables: { filename: file.name, filetype: file.type }
     })
     const { requestUrl, imageUrl } = response.data.s3Sign
     const options = {
@@ -167,7 +166,8 @@ class NewPost extends Component {
     }
     await axios.put(requestUrl, file, options)
     await this.props.createImage({
-      variables: { url: imageUrl, title: file.name }
+      variables: { url: imageUrl, title: file.name },
+      refetchQueries: [{ query: ALL_IMAGES_QUERY }]
     })
     return imageUrl
   }

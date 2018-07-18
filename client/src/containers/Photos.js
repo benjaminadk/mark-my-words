@@ -199,6 +199,7 @@ class Photos extends Component {
         file={this.state.file}
         handleDrop={this.handleDrop}
         handleUploadImage={this.handleUploadImage}
+        handleCloseUpload={this.handleCloseUpload}
       />
     ]
   }
