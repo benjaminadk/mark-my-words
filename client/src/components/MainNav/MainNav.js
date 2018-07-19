@@ -10,6 +10,7 @@ import List from '@material-ui/core/List'
 import Typography from '@material-ui/core/Typography'
 import Divider from '@material-ui/core/Divider'
 import IconButton from '@material-ui/core/IconButton'
+import Badge from '@material-ui/core/Badge'
 import Button from '@material-ui/core/Button'
 import MenuIcon from '@material-ui/icons/Menu'
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft'
@@ -17,6 +18,7 @@ import NotificationIcon from '@material-ui/icons/Notifications'
 import MainMenu from './MainMenu'
 
 const drawerWidth = 240
+const RADIUS = 10
 
 const styles = theme => ({
   root: {
@@ -95,6 +97,11 @@ const styles = theme => ({
   content: {
     flexGrow: 1,
     backgroundColor: theme.palette.background.default
+  },
+  badge: {
+    height: RADIUS * 2,
+    width: RADIUS * 2,
+    fontSize: theme.typography.pxToRem(RADIUS)
   }
 })
 
@@ -115,8 +122,8 @@ class MainNav extends Component {
       userId,
       isAuthenticated,
       isAdmin,
+      unseen,
       handleOpenPopper,
-      setAnchorEl,
       handleLogout
     } = this.props
 
@@ -147,7 +154,21 @@ class MainNav extends Component {
               </Typography>
             </div>
             <div className={classes.topRight}>
-              {isAuthenticated && (
+              {isAuthenticated && unseen > 0 ? (
+                <IconButton
+                  color="inherit"
+                  onClick={handleOpenPopper}
+                  className={classes.notification}
+                >
+                  <Badge
+                    badgeContent={unseen}
+                    color="secondary"
+                    classes={{ badge: classes.badge }}
+                  >
+                    <NotificationIcon />
+                  </Badge>
+                </IconButton>
+              ) : (
                 <IconButton
                   color="inherit"
                   onClick={handleOpenPopper}

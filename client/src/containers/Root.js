@@ -4,6 +4,7 @@ import { PropsRoute, Auth, Admin } from '../utils/routing'
 import { MuiThemeProvider } from '@material-ui/core/styles'
 import { graphql, compose } from 'react-apollo'
 import { AUTOLOGIN_MUTATION } from '../apollo/mutations/autoLogin'
+import { MARK_AS_SEEN_MUTATION } from '../apollo/mutations/markAsSeen'
 import MainNav from '../components/MainNav/MainNav'
 import Home from './Home'
 import LatestPost from './LatestPost'
@@ -16,13 +17,14 @@ import About from './About'
 import UserLanding from './UserLanding'
 import NotFound from '../components/404'
 import Snack from '../components/Snack'
-import Popper from '@material-ui/core/Popper'
+import Notifications from '../components/Notifications'
 import theme from '../styles/theme'
 
 class Root extends Component {
   state = {
     blog: null,
     user: null,
+    unseen: 0,
     admin: false,
     loggedIn: false,
     popper: false,
@@ -33,6 +35,7 @@ class Root extends Component {
 
   async componentWillMount() {
     const token = localStorage.getItem('TOKEN')
+    let unseen = 0
     if (token) {
       let response = await this.props.autoLogin()
       const { success, message, user, admin } = response.data.autoLogin
@@ -41,9 +44,21 @@ class Root extends Component {
       }
       if (success) {
         Auth.authenticate()
+        let { notifications } = user
+        let seenIds = user.seen
+        let allIds = []
+        notifications.forEach(n => {
+          allIds.push(n.id)
+        })
+        allIds.forEach(id => {
+          if (seenIds.indexOf(id) === -1) {
+            unseen += 1
+          }
+        })
       }
       this.setState({
         user,
+        unseen,
         loggedIn: success,
         admin,
         snack: true,
@@ -74,7 +89,19 @@ class Root extends Component {
 
   handleClosePopper = () => this.setState({ popper: false })
 
-  setAnchorEl = node => (this.anchorEl = node)
+  handleMarkAsSeen = async notificationId => {
+    let seenIds = this.state.user.seen
+    if (seenIds.indexOf(notificationId === -1)) {
+      let response = await this.props.markAsSeen({
+        variables: { notificationId },
+        refetchQueries: [{ query: AUTOLOGIN_MUTATION }]
+      })
+      const { success } = response.data.markAsSeen
+      if (success) {
+        this.setState({ unseen: this.state.unseen - 1 })
+      }
+    }
+  }
 
   render() {
     return [
@@ -84,8 +111,8 @@ class Root extends Component {
             userId={this.state.user ? this.state.user.id : null}
             isAuthenticated={this.state.loggedIn}
             isAdmin={this.state.admin && Admin.isAdmin}
+            unseen={this.state.unseen}
             handleOpenPopper={this.handleOpenPopper}
-            setAnchorEl={this.setAnchorEl}
             handleLogout={this.handleLogout}
           >
             <Switch>
@@ -120,6 +147,15 @@ class Root extends Component {
               />
               <Route component={NotFound} />
             </Switch>
+            <Notifications
+              notifications={
+                this.state.user ? this.state.user.notifications : null
+              }
+              popper={this.state.popper}
+              anchorEl={this.state.anchorEl}
+              handleClosePopper={this.handleClosePopper}
+              handleMarkAsSeen={this.handleMarkAsSeen}
+            />
           </MainNav>
         </BrowserRouter>
       </MuiThemeProvider>,
@@ -129,28 +165,12 @@ class Root extends Component {
         message={this.state.snackMessage}
         variant={this.state.snackVariant}
         handleClose={this.handleSnackClose}
-      />,
-      <Popper
-        key="popper"
-        open={this.state.popper}
-        anchorEl={this.state.anchorEl}
-        placement="left-end"
-        style={{
-          zIndex: 2,
-          height: '40vh',
-          width: '20vw',
-          border: '1px solid',
-          marginTop: '8vh',
-          backgroundColor: 'white'
-        }}
-      >
-        <div>
-          <p>Notifications</p>
-          <button onClick={this.handleClosePopper}>close</button>
-        </div>
-      </Popper>
+      />
     ]
   }
 }
 
-export default compose(graphql(AUTOLOGIN_MUTATION, { name: 'autoLogin' }))(Root)
+export default compose(
+  graphql(AUTOLOGIN_MUTATION, { name: 'autoLogin' }),
+  graphql(MARK_AS_SEEN_MUTATION, { name: 'markAsSeen' })
+)(Root)

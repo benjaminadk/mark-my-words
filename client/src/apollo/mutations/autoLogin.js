@@ -12,6 +12,15 @@ export const AUTOLOGIN_MUTATION = gql`
         avatar
         jwt
         createdAt
+        notifications {
+          id
+          type
+          avatar
+          text
+          link
+          createdAt
+        }
+        seen
       }
       admin
     }

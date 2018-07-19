@@ -116,7 +116,7 @@ module.exports = {
   },
 
   Mutation: {
-    createPost: async (root, args, { models }) => {
+    createPost: async (root, args, { models, user }) => {
       try {
         const { title, subTitle, body, words, image, tags } = args
         const post = new models.Post({
@@ -127,7 +127,20 @@ module.exports = {
           image,
           tags
         })
-        await post.save()
+        const savedPost = await post.save()
+        const notification = new models.Notification({
+          type: 'New Post',
+          avatar: user.avatar,
+          text: title,
+          link: `/post/${savedPost.id}`
+        })
+        const savedNotification = await notification.save()
+        const users = await models.User.find().select('_id')
+        users.forEach(async u => {
+          let filter = { _id: u._id }
+          let update = { $push: { notifications: savedNotification._id } }
+          await models.User.findOneAndUpdate(filter, update)
+        })
         return {
           success: true,
           message: 'new post created'

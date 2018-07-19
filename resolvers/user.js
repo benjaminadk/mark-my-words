@@ -1,3 +1,5 @@
+const keys = require('../config')
+
 module.exports = {
   Query: {
     userById: async (root, { userId }, { models }) =>
@@ -7,7 +9,7 @@ module.exports = {
   Mutation: {
     autoLogin: async (root, args, { models, user }) => {
       if (user) {
-        if (user.googleId === '117803716222757935095') {
+        if (user.googleId === keys.GOOGLE_ID) {
           return {
             success: true,
             message: `ADMIN: ${user.username} LOGGED IN`,

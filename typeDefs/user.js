@@ -8,6 +8,8 @@ module.exports = gql`
     username: String
     avatar: String
     jwt: String
+    notifications: [Notification]
+    seen: [String]
     createdAt: String
   }
 
