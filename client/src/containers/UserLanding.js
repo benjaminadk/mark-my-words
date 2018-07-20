@@ -4,6 +4,8 @@ import { graphql, compose } from 'react-apollo'
 import { USER_BY_ID_QUERY } from '../apollo/queries/userById'
 import { EDIT_USERNAME_MUTATION } from '../apollo/mutations/editUsername'
 import { EDIT_EMAIL_MUTATION } from '../apollo/mutations/editEmail'
+import { EDIT_AVATAR_MUTATION } from '../apollo/mutations/editAvatar'
+import { S3_SIGN_MUTATION } from '../apollo/mutations/s3Sign'
 import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
@@ -15,10 +17,13 @@ import ListItemText from '@material-ui/core/ListItemText'
 import Button from '@material-ui/core/Button'
 import TextField from '@material-ui/core/TextField'
 import Avatar from '@material-ui/core/Avatar'
+import CircularProgress from '@material-ui/core/CircularProgress'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import SendIcon from '@material-ui/icons/Send'
 import Snack from '../components/Snack'
 import Loading from '../components/Loading'
+import Dropzone from 'react-dropzone'
+import axios from 'axios'
 
 const perks = [
   'Comment on blog posts',
@@ -68,6 +73,40 @@ const styles = theme => ({
   avatar: {
     height: 50,
     width: 50
+  },
+  avatarEdit: {
+    width: '55%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  },
+  dropzone: {
+    width: 50,
+    height: 50,
+    border: `1px dashed ${theme.palette.text.secondary}`,
+    borderRadius: '10px',
+    cursor: 'pointer',
+    backgroundSize: 'contain',
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center'
+  },
+  buttons: {
+    display: 'flex'
+  },
+  wrapper: {
+    position: 'relative',
+    marginRight: '1vw'
+  },
+  progressButton: {
+    color: theme.palette.secondary.main,
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12
   }
 })
 
@@ -78,6 +117,9 @@ class UserLanding extends Component {
     usernameEdit: false,
     email: '',
     emailEdit: false,
+    file: null,
+    progress: 0,
+    avatarEdit: false,
     snack: false,
     snackVariant: '',
     snackMessage: ''
@@ -140,9 +182,50 @@ class UserLanding extends Component {
     })
   }
 
+  handleEditAvatar = async () => {
+    const { file } = this.state
+    let response = await this.props.s3Sign({
+      variables: { filename: file.name, filetype: file.type }
+    })
+    const { requestUrl, imageUrl } = response.data.s3Sign
+    const options = {
+      headers: { 'Content-Type': file.type },
+      onUploadProgress: progressEvent => {
+        var percentCompleted = Math.round(
+          (progressEvent.loaded * 100) / progressEvent.total
+        )
+        this.setState({ progress: percentCompleted })
+      }
+    }
+    await axios.put(requestUrl, file, options)
+    let response2 = await this.props.editAvatar({
+      variables: { avatar: imageUrl },
+      refetchQueries: [
+        {
+          query: USER_BY_ID_QUERY,
+          variables: { userId: this.props.match.params.userId }
+        }
+      ]
+    })
+    const { success, message } = response2.data.editAvatar
+    await this.setState({
+      snack: true,
+      snackVariant: success ? 'success' : 'error',
+      snackMessage: message,
+      avatarEdit: false,
+      file: null,
+      progress: 0
+    })
+  }
+
   toggleEmailEdit = () => this.setState({ emailEdit: !this.state.emailEdit })
 
-  toggleAvatarEdit = () => {}
+  enterAvatarEdit = () => this.setState({ avatarEdit: true })
+
+  cancelAvatarEdit = () =>
+    this.setState({ avatarEdit: false, file: null, progress: 0 })
+
+  handleDrop = files => this.setState({ file: files[0], progress: 0 })
 
   handleSnackClose = () => this.setState({ snack: false })
 
@@ -151,7 +234,16 @@ class UserLanding extends Component {
       data: { loading, userById },
       classes
     } = this.props
-    const { expanded, username, usernameEdit, email, emailEdit } = this.state
+    const {
+      expanded,
+      username,
+      usernameEdit,
+      email,
+      emailEdit,
+      file,
+      progress,
+      avatarEdit
+    } = this.state
     if (loading) {
       return <Loading />
     }
@@ -276,21 +368,63 @@ class UserLanding extends Component {
                   </Button>
                 </div>
               )}
-              <div className={classes.profileContainer}>
-                <Typography variant="body2">Profile Pic</Typography>
-                <Avatar
-                  src={userById.avatar}
-                  alt="profile"
-                  className={classes.avatar}
-                />
-                <Button
-                  variant="outlined"
-                  color="secondary"
-                  onClick={this.toggleAvatarEdit}
-                >
-                  Change
-                </Button>
-              </div>
+              {avatarEdit ? (
+                <div className={classes.profileContainer}>
+                  <div className={classes.avatarEdit}>
+                    <Typography variant="body2">
+                      Click || Drag & Drop
+                    </Typography>
+                    <Dropzone
+                      accept="image/*"
+                      multiple={false}
+                      className={classes.dropzone}
+                      onDrop={this.handleDrop}
+                      style={{
+                        backgroundImage: file && `url(${file.preview})`
+                      }}
+                    />
+                  </div>
+                  <div className={classes.buttons}>
+                    <div className={classes.wrapper}>
+                      <Button
+                        variant="outlined"
+                        color="secondary"
+                        onClick={this.handleEditAvatar}
+                        disabled={!file}
+                      >
+                        Save
+                      </Button>
+                      {progress > 0 && (
+                        <CircularProgress
+                          size={24}
+                          variant="determinate"
+                          value={progress}
+                          className={classes.progressButton}
+                        />
+                      )}
+                    </div>
+                    <Button variant="outlined" onClick={this.cancelAvatarEdit}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className={classes.profileContainer}>
+                  <Typography variant="body2">Profile Pic</Typography>
+                  <Avatar
+                    src={userById.avatar}
+                    alt="profile"
+                    className={classes.avatar}
+                  />
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={this.enterAvatarEdit}
+                  >
+                    Change
+                  </Button>
+                </div>
+              )}
             </ExpansionPanelDetails>
           </ExpansionPanel>
         </div>
@@ -312,5 +446,7 @@ export default compose(
     options: props => ({ variables: { userId: props.match.params.userId } })
   }),
   graphql(EDIT_USERNAME_MUTATION, { name: 'editUsername' }),
-  graphql(EDIT_EMAIL_MUTATION, { name: 'editEmail' })
+  graphql(EDIT_EMAIL_MUTATION, { name: 'editEmail' }),
+  graphql(EDIT_AVATAR_MUTATION, { name: 'editAvatar' }),
+  graphql(S3_SIGN_MUTATION, { name: 's3Sign' })
 )(UserLanding)

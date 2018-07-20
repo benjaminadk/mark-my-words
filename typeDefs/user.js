@@ -28,5 +28,6 @@ module.exports = gql`
     autoLogin: UserPayload
     editUsername(username: String): Payload
     editEmail(email: String): Payload
+    editAvatar(avatar: String): Payload
   }
 `

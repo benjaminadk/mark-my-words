@@ -54,6 +54,7 @@ const Upload = ({
         accept="image/*"
         className={classes.dropzone}
         onDrop={handleDrop}
+        multiple={false}
         style={{
           backgroundImage: file && `url(${file.preview})`
         }}

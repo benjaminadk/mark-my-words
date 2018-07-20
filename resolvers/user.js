@@ -66,6 +66,23 @@ module.exports = {
           message: 'error changing email'
         }
       }
+    },
+
+    editAvatar: async (root, { avatar }, { models, user }) => {
+      try {
+        const filter = { _id: user.id }
+        const update = { $set: { avatar } }
+        await models.User.findOneAndUpdate(filter, update)
+        return {
+          success: true,
+          message: 'new avatar set'
+        }
+      } catch (error) {
+        return {
+          success: false,
+          message: 'error changing avatar'
+        }
+      }
     }
   }
 }
