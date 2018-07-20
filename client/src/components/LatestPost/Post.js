@@ -131,9 +131,16 @@ class Post extends Component {
           </div>
         ),
         a: ({ children, href }) => {
+          console.log(href)
           if (href.includes('http')) {
             return (
               <a href={href} target="_blank" className="Post-a">
+                {children}
+              </a>
+            )
+          } else if (href.includes('#') || href.includes(':')) {
+            return (
+              <a href={href} className="Post-a">
                 {children}
               </a>
             )
