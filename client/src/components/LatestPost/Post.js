@@ -78,22 +78,40 @@ class Post extends Component {
     this.md.renderer = new RemarkableReactRenderer({
       components: {
         h1: ({ children }) => (
-          <Typography variant="display3">{children}</Typography>
+          <div>
+            <Typography variant="display3">{children}</Typography>
+            <br />
+          </div>
         ),
         h2: ({ children }) => (
-          <Typography variant="display2">{children}</Typography>
+          <div>
+            <Typography variant="display2">{children}</Typography>
+            <br />
+          </div>
         ),
         h3: ({ children }) => (
-          <Typography variant="display1">{children}</Typography>
+          <div>
+            <Typography variant="display1">{children}</Typography>
+            <br />
+          </div>
         ),
         h4: ({ children }) => (
-          <Typography variant="headline">{children}</Typography>
+          <div>
+            <Typography variant="headline">{children}</Typography>
+            <br />
+          </div>
         ),
         h5: ({ children }) => (
-          <Typography variant="subheading">{children}</Typography>
+          <div>
+            <Typography variant="subheading">{children}</Typography>
+            <br />
+          </div>
         ),
         h6: ({ children }) => (
-          <Typography variant="title">{children}</Typography>
+          <div>
+            <Typography variant="title">{children}</Typography>
+            <br />
+          </div>
         ),
         p: ({ children }) => (
           <div>
@@ -104,7 +122,7 @@ class Post extends Component {
           </div>
         ),
         blockquote: ({ children }) => (
-          <div style={{ display: 'flex' }}>
+          <div style={{ display: 'flex', marginBottom: '2.5vh' }}>
             <QuoteIcon style={{ transform: 'scaleX(-1)' }} />
             <Typography variant="body2">
               {children[0].props.children}

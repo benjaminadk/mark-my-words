@@ -150,7 +150,9 @@ class MainNav extends Component {
                 <MenuIcon />
               </IconButton>
               <Typography variant="title" color="inherit" noWrap>
-                {isAdmin ? 'Mark My Words  **ADMIN**' : 'Mark My Words'}
+                {isAdmin
+                  ? 'Mark My Words  **ADMIN**'
+                  : 'Mark My Words - UNDER CONSTRUCTION'}
               </Typography>
             </div>
             <div className={classes.topRight}>

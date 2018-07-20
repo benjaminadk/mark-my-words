@@ -104,6 +104,9 @@ const Comments = ({
     <Grid item xs={2} className={classes.empty} />
     <Grid item xs={8} className={classes.container}>
       <Typography variant="title">Comments</Typography>
+      {(!user || !isAuthenticated) && (
+        <Typography variant="caption">* Login to post comments</Typography>
+      )}
       {user &&
         isAuthenticated && (
           <div className={classes.rootComment}>
