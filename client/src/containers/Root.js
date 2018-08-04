@@ -10,7 +10,7 @@ import Home from './Home'
 import LatestPost from './LatestPost'
 import NewPost from './NewPost'
 import AllPostsContainer from './AllPostsContainer'
-import Post from './Post'
+import AnyPost from './AnyPost'
 import Photos from './Photos'
 import Analytics from './Analytics'
 import About from './About'
@@ -136,7 +136,7 @@ class Root extends Component {
                 isAdmin={this.state.admin && Admin.isAdmin}
                 handleBlog={this.handleBlog}
               />
-              <Route path="/post/:postId" component={Post} />
+              <Route path="/post/:postId" component={AnyPost} />
               <Route path="/analytics" component={Analytics} />
               <Route path="/photos" component={Photos} />
               <Route path="/about" component={About} />

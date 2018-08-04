@@ -192,7 +192,7 @@ class SnippetUtility extends Component {
               key={`image-${i}`}
               dense
               disableGutters
-              onClick={() => this.handleMenuItemClick(ai.url)}
+              onClick={() => this.handleImageClick(ai.url)}
             >
               <img src={ai.url} alt={ai.title} className={classes.thumbnail} />
               <ListItemText primary={ai.title} />

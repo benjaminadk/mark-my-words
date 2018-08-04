@@ -41,6 +41,11 @@ const styles = theme => ({
     display: 'flex',
     justifyContent: 'space-between'
   },
+  blockquote: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: '2.5vh'
+  },
   imageContainer: {
     display: 'flex',
     justifyContent: 'center'
@@ -122,7 +127,7 @@ class Post extends Component {
           </div>
         ),
         blockquote: ({ children }) => (
-          <div style={{ display: 'flex', marginBottom: '2.5vh' }}>
+          <div className={this.props.classes.blockquote}>
             <QuoteIcon style={{ transform: 'scaleX(-1)' }} />
             <Typography variant="body2">
               {children[0].props.children}
@@ -131,7 +136,6 @@ class Post extends Component {
           </div>
         ),
         a: ({ children, href }) => {
-          console.log(href)
           if (href.includes('http')) {
             return (
               <a href={href} target="_blank" className="Post-a">

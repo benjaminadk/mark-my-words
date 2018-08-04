@@ -35,6 +35,11 @@ const styles = theme => ({
     marginBottom: '10vh',
     backgroundColor: '#FFFFFF'
   },
+  blockquote: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: '2.5vh'
+  },
   imageContainer: {
     display: 'flex',
     justifyContent: 'center'
@@ -52,7 +57,7 @@ const styles = theme => ({
   }
 })
 
-class Post extends Component {
+class AnyPost extends Component {
   state = {
     dummy: 0
   }
@@ -76,22 +81,40 @@ class Post extends Component {
     this.md.renderer = new RemarkableReactRenderer({
       components: {
         h1: ({ children }) => (
-          <Typography variant="display3">{children}</Typography>
+          <div>
+            <Typography variant="display3">{children}</Typography>
+            <br />
+          </div>
         ),
         h2: ({ children }) => (
-          <Typography variant="display2">{children}</Typography>
+          <div>
+            <Typography variant="display2">{children}</Typography>
+            <br />
+          </div>
         ),
         h3: ({ children }) => (
-          <Typography variant="display1">{children}</Typography>
+          <div>
+            <Typography variant="display1">{children}</Typography>
+            <br />
+          </div>
         ),
         h4: ({ children }) => (
-          <Typography variant="headline">{children}</Typography>
+          <div>
+            <Typography variant="headline">{children}</Typography>
+            <br />
+          </div>
         ),
         h5: ({ children }) => (
-          <Typography variant="subheading">{children}</Typography>
+          <div>
+            <Typography variant="subheading">{children}</Typography>
+            <br />
+          </div>
         ),
         h6: ({ children }) => (
-          <Typography variant="title">{children}</Typography>
+          <div>
+            <Typography variant="title">{children}</Typography>
+            <br />
+          </div>
         ),
         p: ({ children }) => (
           <div>
@@ -102,9 +125,9 @@ class Post extends Component {
           </div>
         ),
         blockquote: ({ children }) => (
-          <div style={{ display: 'flex' }}>
+          <div className={this.props.classes.blockquote}>
             <QuoteIcon style={{ transform: 'scaleX(-1)' }} />
-            <Typography varaint="body2">
+            <Typography variant="body2">
               {children[0].props.children}
             </Typography>
             <QuoteIcon />
@@ -114,6 +137,12 @@ class Post extends Component {
           if (href.includes('http')) {
             return (
               <a href={href} target="_blank" className="Post-a">
+                {children}
+              </a>
+            )
+          } else if (href.includes('#') || href.includes(':')) {
+            return (
+              <a href={href} className="Post-a">
                 {children}
               </a>
             )
@@ -250,4 +279,4 @@ export default compose(
     options: props => ({ variables: { postId: props.match.params.postId } })
   }),
   graphql(ADD_VIEW_MUTATION, { name: 'addView' })
-)(Post)
+)(AnyPost)

@@ -253,18 +253,16 @@ class NewPost extends Component {
     })
   }
 
-  handleEmojiClick = emoji =>
-    this.setState(state => {
-      const { body } = state
-      return { body: body.concat(emoji) }
-    })
-
   handleSnippetClick = snippet => {
-    this.setState(state => {
-      const { body } = state
-      return { body: body.concat(snippet) }
+    let start = this.textarea.current.selectionStart
+    let end = this.textarea.current.selectionEnd
+    let { body } = this.state
+    let newBody =
+      body.substring(0, start) + snippet + body.substring(end, body.length)
+    this.setState({ body: newBody }, () => {
+      this.textarea.current.focus()
+      this.textarea.current.setSelectionRange(start, start + snippet.length)
     })
-    this.textarea.current.focus()
   }
 
   handleSnackClose = () => this.setState({ snack: false })
@@ -309,7 +307,7 @@ class NewPost extends Component {
               </div>
               <div className={classes.utilsContainer}>
                 <Typography variant="subheading">Insert Emoji</Typography>
-                <EmojiUtility onClick={this.handleEmojiClick} />
+                <EmojiUtility onClick={this.handleSnippetClick} />
               </div>
             </div>
             <TextField

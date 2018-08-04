@@ -12,4 +12,4 @@
 - [x] add edit email in profile
 - [x] add edit avatar in profile
 - [ ] add comments to regular post view - not just latest
-- [ ] add about content
+- [x] add about content
