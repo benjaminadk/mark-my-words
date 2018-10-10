@@ -12,8 +12,8 @@ const googleOauth = new GoogleStrategy(
     clientSecret: keys.GOOGLE_CLIENT_SECRET,
     callbackURL:
       process.env.NODE_ENV === 'production'
-        ? 'https://markmywordsblog.herokuapp.com/auth/google/callback'
-        : 'http://localhost:3001/auth/google/callback',
+        ? 'https://markmywordsblog.herokuapp.com/api/google/callback'
+        : 'http://localhost:3001/api/google/callback',
     passRequestToCallback: true
   },
   async (request, accessToken, refreshToken, profile, done) => {
