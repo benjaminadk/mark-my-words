@@ -73,13 +73,7 @@ class Post extends Component {
     })
     this.md.core.ruler.enable(['abbr'])
     this.md.block.ruler.enable(['footnote', 'deflist'])
-    this.md.inline.ruler.enable([
-      'footnote_inline',
-      'ins',
-      'mark',
-      'sub',
-      'sup'
-    ])
+    this.md.inline.ruler.enable(['footnote_inline', 'ins', 'mark', 'sub', 'sup'])
     this.md.renderer = new RemarkableReactRenderer({
       components: {
         h1: ({ children }) => (
@@ -129,16 +123,14 @@ class Post extends Component {
         blockquote: ({ children }) => (
           <div className={this.props.classes.blockquote}>
             <QuoteIcon style={{ transform: 'scaleX(-1)' }} />
-            <Typography variant="body2">
-              {children[0].props.children}
-            </Typography>
+            <Typography variant="body2">{children[0].props.children}</Typography>
             <QuoteIcon />
           </div>
         ),
         a: ({ children, href }) => {
           if (href.includes('http')) {
             return (
-              <a href={href} target="_blank" className="Post-a">
+              <a href={href} target="_blank" rel="noopener noreferrer" className="Post-a">
                 {children}
               </a>
             )
@@ -149,11 +141,7 @@ class Post extends Component {
               </a>
             )
           } else {
-            return (
-              <Link to={`${this.props.location.pathname}#${href}`}>
-                {children}
-              </Link>
-            )
+            return <Link to={`${this.props.location.pathname}#${href}`}>{children}</Link>
           }
         },
         img: ({ alt, src, title }) => {
@@ -161,11 +149,7 @@ class Post extends Component {
             return (
               <div className={this.props.classes.imageContainer}>
                 <Tooltip title={title}>
-                  <img
-                    src={src}
-                    alt={alt}
-                    className={this.props.classes.image}
-                  />
+                  <img src={src} alt={alt} className={this.props.classes.image} />
                 </Tooltip>
               </div>
             )
@@ -184,9 +168,7 @@ class Post extends Component {
             {children}
           </TableCell>
         ),
-        tr: ({ children }) => (
-          <TableRow className="Post-tr">{children}</TableRow>
-        ),
+        tr: ({ children }) => <TableRow className="Post-tr">{children}</TableRow>,
         td: ({ children }) => <TableCell>{children}</TableCell>,
         li: ({ children }) => {
           const str = children[0].props.children[0]
@@ -254,28 +236,16 @@ class Post extends Component {
         </Grid>
         <Grid item xs={8} className={classes.container}>
           <div className={classes.stats}>
-            <Typography variant="body1">
-              {formatDate(latestPost.createdAt)}
-            </Typography>
-            <Typography variant="body1">
-              {readTime(latestPost.words)}
-            </Typography>
+            <Typography variant="body1">{formatDate(latestPost.createdAt)}</Typography>
+            <Typography variant="body1">{readTime(latestPost.words)}</Typography>
           </div>
           <div className={classes.imageContainer}>
-            <img
-              src={latestPost.image}
-              alt="featured"
-              className={classes.image}
-            />
+            <img src={latestPost.image} alt="featured" className={classes.image} />
           </div>
           <Typography variant="display3" align="center">
             {latestPost.title}
           </Typography>
-          <Typography
-            variant="title"
-            align="center"
-            className={classes.subTitle}
-          >
+          <Typography variant="title" align="center" className={classes.subTitle}>
             {latestPost.subTitle}
           </Typography>
           <Divider className={classes.divider} />

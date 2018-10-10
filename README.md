@@ -1,8 +1,8 @@
 ## Mark My Words
 
-"^2.0.0-rc.6"
+- A personal blog built with JavaScript and Markdown
 
-#### Todos
+### Todos
 
-- [ ] integrate `downshift` autocomplete into infinte scrolling implementation
-- [ ] add comments to regular post view - not just latest
+- [ ] Notification System
+- [ ] Fix View Counter

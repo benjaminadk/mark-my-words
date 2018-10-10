@@ -17,7 +17,8 @@ const styles = theme => ({
     width: '30vw',
     border: `1px solid ${theme.palette.divider}`,
     marginTop: '8vh',
-    backgroundColor: 'white'
+    backgroundColor: 'white',
+    overflow: 'auto'
   },
   container: {
     display: 'flex',
@@ -101,13 +102,9 @@ const Notifications = ({
                     >
                       <Avatar src={n.avatar} alt="notification icon" />
                       <div className={classes.text}>
-                        <Typography variant="caption">{`${
-                          n.type
-                        }: `}</Typography>
+                        <Typography variant="caption">{`${n.type}: `}</Typography>
                         <Typography variant="body1">{n.text}</Typography>
-                        <Typography variant="caption">
-                          {howLongAgo(n.createdAt)}
-                        </Typography>
+                        <Typography variant="caption">{howLongAgo(n.createdAt)}</Typography>
                       </div>
                     </Link>
                   )
