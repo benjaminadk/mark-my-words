@@ -6,9 +6,7 @@ module.exports = {
   Query: {
     allPostsPaginated: (root, { first, after }, { models }) => {
       let edgesArray = []
-      let cursorNumeric = parseInt(
-        Buffer.from(after, 'base64').toString('ascii')
-      )
+      let cursorNumeric = parseInt(Buffer.from(after, 'base64').toString('ascii'))
       if (!cursorNumeric) cursorNumeric = 0
       var edgesAndPageInfoPromise = new Promise((resolve, reject) => {
         let edges = models.Post.where('id')
@@ -41,15 +39,10 @@ module.exports = {
         })
 
         edges.on('end', () => {
-          let endCursor =
-            edgesArray.length > 0
-              ? edgesArray[edgesArray.length - 1].cursor
-              : NaN
+          let endCursor = edgesArray.length > 0 ? edgesArray[edgesArray.length - 1].cursor : NaN
           let hasNextPageFlag = new Promise((resolve, reject) => {
             if (endCursor) {
-              let endCursorNumeric = parseInt(
-                Buffer.from(endCursor, 'base64').toString('ascii')
-              )
+              let endCursorNumeric = parseInt(Buffer.from(endCursor, 'base64').toString('ascii'))
               models.Post.where('id')
                 .gt(endCursorNumeric)
                 .count((err, count) => {
@@ -76,10 +69,7 @@ module.exports = {
         } else resolve(totalCount)
       })
 
-      let returnValue = Promise.all([
-        edgesAndPageInfoPromise,
-        totalCountPromise
-      ]).then(values => {
+      let returnValue = Promise.all([edgesAndPageInfoPromise, totalCountPromise]).then(values => {
         return {
           edges: values[0].edges,
           totalCount: values[1],
@@ -94,13 +84,6 @@ module.exports = {
 
     allPosts: async (root, args, { models }) => {
       return await models.Post.find()
-        .populate([
-          {
-            path: 'views',
-            model: 'view'
-          }
-        ])
-        .exec()
     },
 
     postById: async (root, { postId }, { models }) => {
@@ -188,10 +171,8 @@ module.exports = {
 
     addView: async (root, { postId }, { models }) => {
       try {
-        const view = new models.View()
-        const savedView = await view.save()
         const filter = { id: postId }
-        const update = { $push: { views: savedView._id } }
+        const update = { $inc: { views: 1 } }
         await models.Post.findOneAndUpdate(filter, update)
         return {
           success: true,

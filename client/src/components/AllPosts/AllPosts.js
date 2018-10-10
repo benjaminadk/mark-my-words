@@ -9,13 +9,13 @@ import Typography from '@material-ui/core/Typography'
 import Tooltip from '@material-ui/core/Tooltip'
 import DeleteIcon from '@material-ui/icons/Delete'
 import EditIcon from '@material-ui/icons/Edit'
-import VisibilityIcon from '@material-ui/icons/Visibility'
 import { formatDate } from '../../utils/formatDate'
 
 const styles = theme => ({
   card: {
     marginTop: '5vh',
-    marginBottom: '5vh'
+    marginBottom: '5vh',
+    cursor: 'pointer'
   },
   content: {
     display: 'flex',
@@ -69,19 +69,10 @@ class AllPosts extends Component {
   render() {
     const { post, isAdmin, handleDeletePost, classes } = this.props
     return (
-      <Card raised className={classes.card}>
+      <Card raised onClick={() => this.handleViewPost(post.id)} className={classes.card}>
         <div className={classes.content}>
-          <div className={classes.iconButtons}>
-            <Tooltip title="View Post">
-              <IconButton
-                classes={{ root: classes.iconButton }}
-                disableRipple
-                onClick={() => this.handleViewPost(post.id)}
-              >
-                <VisibilityIcon />
-              </IconButton>
-            </Tooltip>
-            {isAdmin && (
+          {isAdmin && (
+            <div className={classes.iconButtons}>
               <Tooltip title="Edit Post">
                 <IconButton
                   classes={{ root: classes.iconButton }}
@@ -91,8 +82,6 @@ class AllPosts extends Component {
                   <EditIcon />
                 </IconButton>
               </Tooltip>
-            )}
-            {isAdmin && (
               <Tooltip title="Delete Post">
                 <IconButton
                   classes={{ root: classes.iconButton }}
@@ -102,8 +91,8 @@ class AllPosts extends Component {
                   <DeleteIcon />
                 </IconButton>
               </Tooltip>
-            )}
-          </div>
+            </div>
+          )}
           <img className={classes.image} src={post.image} alt="title" />
           <Typography variant="display2" align="center">
             {post.title}

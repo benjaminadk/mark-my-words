@@ -50,20 +50,18 @@ class Analytics extends Component {
     let totalViews = 0
     let totalPosts = allPosts.length
     allPosts.forEach(p => {
-      p.views.forEach(v => {
-        totalViews += 1
-      })
+      totalViews = totalViews + p.views
     })
 
     // get total views per post and max views
     let maxViews = 0
     const viewsPerPost = allPosts.map((p, i) => {
-      if (p.views.length > maxViews) {
-        maxViews = p.views.length
+      if (p.views > maxViews) {
+        maxViews = p.views
       }
       return {
         x: p.title,
-        y: p.views.length,
+        y: p.views,
         color: i % 3
       }
     })
@@ -101,18 +99,9 @@ class Analytics extends Component {
     if (loading) return <Loading />
     return (
       <div className={classes.root}>
-        <InfoCard
-          totalPosts={this.state.totalPosts}
-          totalViews={this.state.totalViews}
-        />
-        <ViewsPerPost
-          viewsPerPost={this.state.viewsPerPost}
-          maxViews={this.state.maxViews}
-        />
-        <FlamesPerPost
-          firePerPost={this.state.firePerPost}
-          maxFire={this.state.maxFire}
-        />
+        <InfoCard totalPosts={this.state.totalPosts} totalViews={this.state.totalViews} />
+        <ViewsPerPost viewsPerPost={this.state.viewsPerPost} maxViews={this.state.maxViews} />
+        <FlamesPerPost firePerPost={this.state.firePerPost} maxFire={this.state.maxFire} />
       </div>
     )
   }

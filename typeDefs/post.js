@@ -10,7 +10,7 @@ module.exports = gql`
     words: Int
     image: String
     tags: [String]
-    views: [View]
+    views: Int
     fire: Int
     comments: [Comment]
     createdAt: String

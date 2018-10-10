@@ -10,9 +10,7 @@ export const ALL_POSTS_QUERY = gql`
       words
       tags
       image
-      views {
-        createdAt
-      }
+      views
       fire
       createdAt
     }

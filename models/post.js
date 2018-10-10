@@ -16,8 +16,8 @@ const postSchema = new Schema({
     autopopulate: { maxDepth: 2 }
   },
   views: {
-    type: [Schema.Types.ObjectId],
-    ref: 'view'
+    type: Number,
+    default: 0
   },
   fire: {
     type: Number,
