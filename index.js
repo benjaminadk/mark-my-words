@@ -9,15 +9,9 @@ const {
   googleRedirect,
   googleScope
 } = require('./services/googleAuth')
-const {
-  fileLoader,
-  mergeTypes,
-  mergeResolvers
-} = require('merge-graphql-schemas')
+const { fileLoader, mergeTypes, mergeResolvers } = require('merge-graphql-schemas')
 
-const resolvers = mergeResolvers(
-  fileLoader(path.join(__dirname, './resolvers'))
-)
+const resolvers = mergeResolvers(fileLoader(path.join(__dirname, './resolvers')))
 
 const typeDefs = mergeTypes(fileLoader(path.join(__dirname, './typeDefs')))
 require('./models/connect')()
@@ -30,9 +24,7 @@ const server = new ApolloServer({
   resolvers,
   context: async ({ req, connection }) => {
     if (connection) return {}
-    const user = await require('./middleware/userAuth')(
-      req.headers['authorization']
-    )
+    const user = await require('./middleware/userAuth')(req.headers['authorization'])
     return { models, user }
   }
 })
@@ -41,8 +33,8 @@ const app = express()
 
 passport.use(googleOauth)
 app.use(passport.initialize())
-app.get('/auth/google', googleScope)
-app.get('/auth/google/callback', googleCallback, googleRedirect)
+app.get('/api/google', googleScope)
+app.get('/api/google/callback', googleCallback, googleRedirect)
 
 server.applyMiddleware({ app, path: '/graphql' })
 

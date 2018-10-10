@@ -131,10 +131,7 @@ class MainNav extends Component {
       <div className={classes.root}>
         <AppBar
           position="absolute"
-          className={classNames(
-            classes.appBar,
-            this.state.open && classes.appBarShift
-          )}
+          className={classNames(classes.appBar, this.state.open && classes.appBarShift)}
         >
           <Toolbar disableGutters={!this.state.open} className={classes.top}>
             <div className={classes.topLeft}>
@@ -142,17 +139,12 @@ class MainNav extends Component {
                 color="inherit"
                 aria-label="open drawer"
                 onClick={this.handleDrawerOpen}
-                className={classNames(
-                  classes.menuButton,
-                  this.state.open && classes.hide
-                )}
+                className={classNames(classes.menuButton, this.state.open && classes.hide)}
               >
                 <MenuIcon />
               </IconButton>
               <Typography variant="title" color="inherit" noWrap>
-                {isAdmin
-                  ? 'Mark My Words  **ADMIN**'
-                  : 'Mark My Words - UNDER CONSTRUCTION'}
+                {isAdmin ? 'Mark My Words  **ADMIN**' : 'Mark My Words'}
               </Typography>
             </div>
             <div className={classes.topRight}>
@@ -162,11 +154,7 @@ class MainNav extends Component {
                   onClick={handleOpenPopper}
                   className={classes.notification}
                 >
-                  <Badge
-                    badgeContent={unseen}
-                    color="secondary"
-                    classes={{ badge: classes.badge }}
-                  >
+                  <Badge badgeContent={unseen} color="secondary" classes={{ badge: classes.badge }}>
                     <NotificationIcon />
                   </Badge>
                 </IconButton>
@@ -180,7 +168,7 @@ class MainNav extends Component {
                 </IconButton>
               )}
               <Button
-                href={isAuthenticated ? null : '/auth/google'}
+                href={isAuthenticated ? null : '/api/google'}
                 onClick={isAuthenticated ? handleLogout : null}
                 color="inherit"
               >
@@ -192,10 +180,7 @@ class MainNav extends Component {
         <Drawer
           variant="permanent"
           classes={{
-            paper: classNames(
-              classes.drawerPaper,
-              !this.state.open && classes.drawerPaperClose
-            )
+            paper: classNames(classes.drawerPaper, !this.state.open && classes.drawerPaperClose)
           }}
           open={this.state.open}
         >
