@@ -114,7 +114,7 @@ class Post extends Component {
         ),
         p: ({ children }) => (
           <div>
-            <Typography variant="body2" align="justify">
+            <Typography component="div" variant="body2" align="justify">
               {children}
             </Typography>
             <br />
@@ -148,7 +148,7 @@ class Post extends Component {
           if (title) {
             return (
               <div className={this.props.classes.imageContainer}>
-                <Tooltip title={title}>
+                <Tooltip title={title} component="div">
                   <img src={src} alt={alt} className={this.props.classes.image} />
                 </Tooltip>
               </div>
@@ -215,19 +215,12 @@ class Post extends Component {
   }
 
   render() {
-    const {
-      classes,
-      latestPost,
-      hotCount,
-      hotCounter,
-      handleHCMouseDown,
-      handleHCMouseUp
-    } = this.props
+    const { classes, post, hotCount, hotCounter, handleHCMouseDown, handleHCMouseUp } = this.props
     return (
       <Grid container className={classes.root}>
         <Grid item xs={2} className={classes.empty}>
           <WhatsHot
-            fire={latestPost.fire}
+            fire={post.fire}
             hotCount={hotCount}
             hotCounter={hotCounter}
             handleHCMouseDown={handleHCMouseDown}
@@ -236,20 +229,20 @@ class Post extends Component {
         </Grid>
         <Grid item xs={8} className={classes.container}>
           <div className={classes.stats}>
-            <Typography variant="body1">{formatDate(latestPost.createdAt)}</Typography>
-            <Typography variant="body1">{readTime(latestPost.words)}</Typography>
+            <Typography variant="body1">{formatDate(post.createdAt)}</Typography>
+            <Typography variant="body1">{readTime(post.words)}</Typography>
           </div>
           <div className={classes.imageContainer}>
-            <img src={latestPost.image} alt="featured" className={classes.image} />
+            <img src={post.image} alt="featured" className={classes.image} />
           </div>
           <Typography variant="display3" align="center">
-            {latestPost.title}
+            {post.title}
           </Typography>
           <Typography variant="title" align="center" className={classes.subTitle}>
-            {latestPost.subTitle}
+            {post.subTitle}
           </Typography>
           <Divider className={classes.divider} />
-          <div>{this.md && this.md.render(latestPost.body)}</div>
+          <div>{this.md && this.md.render(post.body)}</div>
         </Grid>
         <Grid item xs={2} className={classes.empty} />
       </Grid>

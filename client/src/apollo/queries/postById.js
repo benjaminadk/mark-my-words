@@ -27,6 +27,7 @@ export const POST_QUERY = gql`
           postedBy {
             username
             avatar
+            createdAt
           }
         }
       }

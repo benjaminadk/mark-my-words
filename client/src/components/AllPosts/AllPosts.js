@@ -69,7 +69,7 @@ class AllPosts extends Component {
   render() {
     const { post, isAdmin, handleDeletePost, classes } = this.props
     return (
-      <Card raised onClick={() => this.handleViewPost(post.id)} className={classes.card}>
+      <Card raised className={classes.card}>
         <div className={classes.content}>
           {isAdmin && (
             <div className={classes.iconButtons}>
@@ -93,16 +93,18 @@ class AllPosts extends Component {
               </Tooltip>
             </div>
           )}
-          <img className={classes.image} src={post.image} alt="title" />
-          <Typography variant="display2" align="center">
-            {post.title}
-          </Typography>
-          <Typography variant="subheading">{post.subTitle}</Typography>
-          <Typography variant="caption" className={classes.postedOn}>
-            {`Posted On ${formatDate(post.createdAt)}`}
-          </Typography>
-          <div>
-            {post.tags && post.tags.map(t => <Chip key={t} label={t} className={classes.chip} />)}
+          <div className={classes.content} onClick={() => this.handleViewPost(post.id)}>
+            <img className={classes.image} src={post.image} alt="title" />
+            <Typography variant="display2" align="center">
+              {post.title}
+            </Typography>
+            <Typography variant="subheading">{post.subTitle}</Typography>
+            <Typography variant="caption" className={classes.postedOn}>
+              {`Posted On ${formatDate(post.createdAt)}`}
+            </Typography>
+            <div>
+              {post.tags && post.tags.map(t => <Chip key={t} label={t} className={classes.chip} />)}
+            </div>
           </div>
         </div>
       </Card>

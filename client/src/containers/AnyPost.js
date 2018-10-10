@@ -1,256 +1,197 @@
 import React, { Component } from 'react'
-import { withStyles } from '@material-ui/core/styles'
 import { compose, graphql } from 'react-apollo'
 import { POST_QUERY } from '../apollo/queries/postById'
 import { ALL_POSTS_QUERY } from '../apollo/queries/allPosts'
 import { ADD_VIEW_MUTATION } from '../apollo/mutations/addView'
-import { HashLink as Link } from 'react-router-hash-link'
-import Grid from '@material-ui/core/Grid'
-import Typography from '@material-ui/core/Typography'
-import Table from '@material-ui/core/Table'
-import TableBody from '@material-ui/core/TableBody'
-import TableCell from '@material-ui/core/TableCell'
-import TableRow from '@material-ui/core/TableRow'
-import Tooltip from '@material-ui/core/Tooltip'
-import ListItem from '@material-ui/core/ListItem'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
-import ListItemText from '@material-ui/core/ListItemText'
-import Divider from '@material-ui/core/Divider'
-import QuoteIcon from '@material-ui/icons/FormatQuote'
-import CheckedIcon from '@material-ui/icons/CheckBox'
-import UncheckedIcon from '@material-ui/icons/CheckBoxOutlineBlank'
+import { ADD_FIRE_MUTATION } from '../apollo/mutations/addFire'
+import { CREATE_COMMENT_MUTATION } from '../apollo/mutations/createComment'
+import { CREATE_SUB_COMMENT_MUTATION } from '../apollo/mutations/createSubComment'
+import Post from '../components/LatestPost/Post'
+import Comments from '../components/LatestPost/Comments'
 import Loading from '../components/Loading'
-import Remarkable from 'remarkable'
-import RemarkableReactRenderer from 'remarkable-react'
-import Highlight from 'react-highlight'
-import 'highlight.js/styles/atom-one-dark.css'
-
-const styles = theme => ({
-  root: {
-    backgroundColor: '#e8e8e8'
-  },
-  blog: {
-    padding: theme.spacing.unit * 3,
-    marginTop: '10vh',
-    marginBottom: '10vh',
-    backgroundColor: '#FFFFFF'
-  },
-  blockquote: {
-    display: 'flex',
-    alignItems: 'center',
-    marginBottom: '2.5vh'
-  },
-  imageContainer: {
-    display: 'flex',
-    justifyContent: 'center'
-  },
-  image: {
-    height: '20vw',
-    minWidth: '20vw',
-    margin: '2vh 0'
-  },
-  subTitle: {
-    marginBottom: '5vh'
-  },
-  divider: {
-    marginBottom: '5vh'
-  }
-})
+import Snack from '../components/Snack'
 
 class AnyPost extends Component {
   state = {
-    dummy: 0
+    dummy: 0,
+    comment: '',
+    subComment: '',
+    subCommentMode: null,
+    subCommentCollapse: null,
+    hotCounter: false,
+    hotCount: 0,
+    snack: false,
+    snackMessage: '',
+    snackVariant: ''
   }
 
-  componentWillMount() {
-    this.md = new Remarkable({
-      typographer: true,
-      html: true,
-      breaks: true,
-      linkify: true
+  async componentDidUpdate(prevProps) {
+    if (prevProps.data.loading && !this.props.data.loading && this.props.data.postById) {
+      await this.props.addView({
+        variables: { postId: this.props.data.postById.id },
+        refetchQueries: [{ query: ALL_POSTS_QUERY }]
+      })
+    }
+  }
+
+  handleCreateComment = async () => {
+    let response, success, message
+    try {
+      response = await this.props.createComment({
+        variables: {
+          text: this.state.comment,
+          postId: this.props.data.postById.id
+        },
+        refetchQueries: [
+          { query: POST_QUERY, variables: { postId: this.props.match.params.postId } }
+        ]
+      })
+      success = response.data.createComment.success
+      message = response.data.createComment.message
+      this.setState({
+        snack: success,
+        snackMessage: message,
+        snackVariant: 'success',
+        comment: ''
+      })
+    } catch (error) {
+      this.setState({
+        snack: true,
+        snackMessage: message,
+        snackVariant: 'error'
+      })
+    }
+  }
+
+  handleCreateSubComment = async commentId => {
+    let response, success, message
+    try {
+      response = await this.props.createSubComment({
+        variables: {
+          text: this.state.subComment,
+          commentId
+        },
+        refetchQueries: [
+          { query: POST_QUERY, variables: { postId: this.props.match.params.postId } }
+        ]
+      })
+      success = response.data.createSubComment.success
+      message = response.data.createSubComment.message
+      this.setState({
+        snack: success,
+        snackMessage: message,
+        snackVariant: 'success',
+        subComment: '',
+        subCommentMode: null
+      })
+    } catch (error) {
+      this.setState({
+        snack: true,
+        snackMessage: message,
+        snackVariant: 'error'
+      })
+    }
+  }
+
+  handleSubCommentMode = i => this.setState({ subCommentMode: i })
+
+  resetSubCommentMode = () => this.setState({ subComment: '', subCommentMode: null })
+
+  handleSubCommentCollapse = i => {
+    if (this.state.subCommentCollapse === i) {
+      this.setState({ subCommentCollapse: null })
+    } else {
+      this.setState({ subCommentCollapse: i })
+    }
+  }
+
+  handleHC = () => this.setState({ hotCount: this.state.hotCount + 1 })
+
+  handleHCMouseDown = () => {
+    this.setState({ hotCounter: true })
+    this.counter = setInterval(() => this.handleHC(), 200)
+  }
+
+  handleHCMouseUp = async () => {
+    clearInterval(this.counter)
+    let response = await this.props.addFire({
+      variables: {
+        postId: this.props.data.postById.id,
+        plus: this.state.hotCount
+      },
+      refetchQueries: [{ query: POST_QUERY, variables: { postId: this.props.match.params.postId } }]
     })
-    this.md.core.ruler.enable(['abbr'])
-    this.md.block.ruler.enable(['footnote', 'deflist'])
-    this.md.inline.ruler.enable(['footnote_inline', 'ins', 'mark', 'sub', 'sup'])
-    this.md.renderer = new RemarkableReactRenderer({
-      components: {
-        h1: ({ children }) => (
-          <div>
-            <Typography variant="display3">{children}</Typography>
-            <br />
-          </div>
-        ),
-        h2: ({ children }) => (
-          <div>
-            <Typography variant="display2">{children}</Typography>
-            <br />
-          </div>
-        ),
-        h3: ({ children }) => (
-          <div>
-            <Typography variant="display1">{children}</Typography>
-            <br />
-          </div>
-        ),
-        h4: ({ children }) => (
-          <div>
-            <Typography variant="headline">{children}</Typography>
-            <br />
-          </div>
-        ),
-        h5: ({ children }) => (
-          <div>
-            <Typography variant="subheading">{children}</Typography>
-            <br />
-          </div>
-        ),
-        h6: ({ children }) => (
-          <div>
-            <Typography variant="title">{children}</Typography>
-            <br />
-          </div>
-        ),
-        p: ({ children }) => (
-          <div>
-            <Typography variant="body2" align="justify">
-              {children}
-            </Typography>
-            <br />
-          </div>
-        ),
-        blockquote: ({ children }) => (
-          <div className={this.props.classes.blockquote}>
-            <QuoteIcon style={{ transform: 'scaleX(-1)' }} />
-            <Typography variant="body2">{children[0].props.children}</Typography>
-            <QuoteIcon />
-          </div>
-        ),
-        a: ({ children, href }) => {
-          if (href.includes('http')) {
-            return (
-              <a href={href} target="_blank" rel="noopener noreferrer" className="Post-a">
-                {children}
-              </a>
-            )
-          } else if (href.includes('#') || href.includes(':')) {
-            return (
-              <a href={href} className="Post-a">
-                {children}
-              </a>
-            )
-          } else {
-            return <Link to={`${this.props.location.pathname}#${href}`}>{children}</Link>
-          }
-        },
-        img: ({ alt, src, title }) => {
-          if (title) {
-            return (
-              <div className={this.props.classes.imageContainer}>
-                <Tooltip title={title}>
-                  <img src={src} alt={alt} className={this.props.classes.image} />
-                </Tooltip>
-              </div>
-            )
-          } else {
-            return (
-              <div className={this.props.classes.imageContainer}>
-                <img src={src} alt={alt} className={this.props.classes.image} />
-              </div>
-            )
-          }
-        },
-        table: ({ children }) => <Table>{children}</Table>,
-        tbody: ({ children }) => <TableBody>{children}</TableBody>,
-        th: ({ children }) => (
-          <TableCell className="Post-th" variant="head">
-            {children}
-          </TableCell>
-        ),
-        tr: ({ children }) => <TableRow className="Post-tr">{children}</TableRow>,
-        td: ({ children }) => <TableCell>{children}</TableCell>,
-        li: ({ children }) => {
-          const str = children[0].props.children[0]
-          if (str.slice(0, 3) === '[ ]') {
-            return (
-              <ListItem>
-                <ListItemIcon>
-                  <UncheckedIcon />
-                </ListItemIcon>
-                <ListItemText primary={str.slice(4)} />
-              </ListItem>
-            )
-          } else if (str.slice(0, 3) === '[x]') {
-            return (
-              <ListItem>
-                <ListItemIcon>
-                  <CheckedIcon />
-                </ListItemIcon>
-                <ListItemText primary={str.slice(4)} />
-              </ListItem>
-            )
-          } else {
-            return <li>{children}</li>
-          }
-        },
-        pre: ({ content, params: language }) => (
-          <Highlight className={language}>{content}</Highlight>
-        ),
-        code: ({ content, params: language }) => (
-          <span
-            style={{
-              backgroundColor: 'lightgrey',
-              fontSize: 12,
-              fontFamily: 'Fira Code',
-              borderRadius: '2px',
-              padding: '2px'
-            }}
-          >
-            {content}
-          </span>
-        )
-      }
+    const { success, message } = response.data.addFire
+    await this.setState({
+      hotCounter: false,
+      hotCount: 0,
+      snack: true,
+      snackVariant: success ? 'warning' : 'error',
+      snackMessage: message
     })
   }
 
-  async componentDidMount() {
-    await this.props.addView({
-      variables: { postId: this.props.match.params.postId },
-      refetchQueries: [{ query: ALL_POSTS_QUERY }]
-    })
-  }
+  handleChange = e => this.setState({ [e.target.name]: e.target.value })
+
+  handleSnackClose = () => this.setState({ snack: false })
 
   render() {
     const {
       data: { loading, postById },
-      classes
+      user,
+      isAuthenticated
     } = this.props
-    if (loading) return <Loading />
-    return (
-      <Grid container className={classes.root}>
-        <Grid item xs={2} className={classes.empty} />
-        <Grid item xs={8} className={classes.blog}>
-          <div className={classes.imageContainer}>
-            <img src={postById.image} alt="featured" className={classes.image} />
-          </div>
-          <Typography variant="display3" align="center">
-            {postById.title}
-          </Typography>
-          <Typography variant="title" align="center" className={classes.subTitle}>
-            {postById.subTitle}
-          </Typography>
-          <Divider className={classes.divider} />
-          <div>{this.md && this.md.render(postById.body)}</div>
-        </Grid>
-        <Grid item xs={2} className={classes.empty} />
-      </Grid>
-    )
+    const {
+      comment,
+      subComment,
+      subCommentMode,
+      subCommentCollapse,
+      hotCount,
+      hotCounter
+    } = this.state
+    if (loading || !postById) return <Loading />
+    return [
+      <div key="main">
+        <Post
+          post={postById}
+          hotCount={hotCount}
+          hotCounter={hotCounter}
+          handleHCMouseDown={this.handleHCMouseDown}
+          handleHCMouseUp={this.handleHCMouseUp}
+        />
+        <Comments
+          user={user}
+          isAuthenticated={isAuthenticated}
+          comment={comment}
+          comments={postById.comments}
+          subComment={subComment}
+          subCommentMode={subCommentMode}
+          subCommentCollapse={subCommentCollapse}
+          handleChange={this.handleChange}
+          handleCreateComment={this.handleCreateComment}
+          handleCreateSubComment={this.handleCreateSubComment}
+          handleSubCommentMode={this.handleSubCommentMode}
+          resetSubCommentMode={this.resetSubCommentMode}
+          handleSubCommentCollapse={this.handleSubCommentCollapse}
+        />
+      </div>,
+      <Snack
+        key="snackbar"
+        open={this.state.snack}
+        message={this.state.snackMessage}
+        variant={this.state.snackVariant}
+        handleClose={this.handleSnackClose}
+      />
+    ]
   }
 }
 
 export default compose(
-  withStyles(styles),
   graphql(POST_QUERY, {
     options: props => ({ variables: { postId: props.match.params.postId } })
   }),
-  graphql(ADD_VIEW_MUTATION, { name: 'addView' })
+  graphql(ADD_VIEW_MUTATION, { name: 'addView' }),
+  graphql(ADD_FIRE_MUTATION, { name: 'addFire' }),
+  graphql(CREATE_COMMENT_MUTATION, { name: 'createComment' }),
+  graphql(CREATE_SUB_COMMENT_MUTATION, { name: 'createSubComment' })
 )(AnyPost)

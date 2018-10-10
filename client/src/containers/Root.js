@@ -84,8 +84,7 @@ class Root extends Component {
     localStorage.removeItem('TOKEN')
   }
 
-  handleOpenPopper = e =>
-    this.setState({ popper: true, anchorEl: e.currentTarget })
+  handleOpenPopper = e => this.setState({ popper: true, anchorEl: e.currentTarget })
 
   handleClosePopper = () => this.setState({ popper: false })
 
@@ -126,9 +125,7 @@ class Root extends Component {
               <Route path="/new-post" component={NewPost} />
               <Route
                 path="/edit"
-                render={() => (
-                  <NewPost blog={this.state.blog} editMode={true} />
-                )}
+                render={() => <NewPost blog={this.state.blog} editMode={true} />}
               />
               <PropsRoute
                 path="/all-posts"
@@ -136,7 +133,12 @@ class Root extends Component {
                 isAdmin={this.state.admin && Admin.isAdmin}
                 handleBlog={this.handleBlog}
               />
-              <Route path="/post/:postId" component={AnyPost} />
+              <PropsRoute
+                path="/post/:postId"
+                component={AnyPost}
+                isAuthenticated={this.state.loggedIn}
+                user={this.state.user || null}
+              />
               <Route path="/analytics" component={Analytics} />
               <Route path="/photos" component={Photos} />
               <Route path="/about" component={About} />
@@ -147,7 +149,7 @@ class Root extends Component {
               />
               <Route component={NotFound} />
             </Switch>
-            <Notifications
+            {/* <Notifications
               notifications={
                 this.state.user ? this.state.user.notifications : null
               }
@@ -155,7 +157,7 @@ class Root extends Component {
               anchorEl={this.state.anchorEl}
               handleClosePopper={this.handleClosePopper}
               handleMarkAsSeen={this.handleMarkAsSeen}
-            />
+            /> */}
           </MainNav>
         </BrowserRouter>
       </MuiThemeProvider>,

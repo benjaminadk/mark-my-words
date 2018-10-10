@@ -5,5 +5,5 @@
 ### Todos
 
 - [ ] Notification System
-- [ ] Fix View Counter
-- [ ] Change Repo Name
+- [x] Fix View Counter
+- [x] Change Repo Name

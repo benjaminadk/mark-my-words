@@ -26,11 +26,7 @@ class LatestPost extends Component {
   }
 
   async componentDidUpdate(prevProps) {
-    if (
-      prevProps.data.loading &&
-      !this.props.data.loading &&
-      this.props.data.latestPost
-    ) {
+    if (prevProps.data.loading && !this.props.data.loading && this.props.data.latestPost) {
       await this.props.addView({
         variables: { postId: this.props.data.latestPost.id },
         refetchQueries: [{ query: ALL_POSTS_QUERY }]
@@ -95,8 +91,7 @@ class LatestPost extends Component {
 
   handleSubCommentMode = i => this.setState({ subCommentMode: i })
 
-  resetSubCommentMode = () =>
-    this.setState({ subComment: '', subCommentMode: null })
+  resetSubCommentMode = () => this.setState({ subComment: '', subCommentMode: null })
 
   handleSubCommentCollapse = i => {
     if (this.state.subCommentCollapse === i) {
@@ -154,7 +149,7 @@ class LatestPost extends Component {
     return [
       <div key="main">
         <Post
-          latestPost={latestPost}
+          post={latestPost}
           hotCount={hotCount}
           hotCounter={hotCounter}
           handleHCMouseDown={this.handleHCMouseDown}

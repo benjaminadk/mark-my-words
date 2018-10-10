@@ -54,17 +54,15 @@ class AllPostsContainer extends Component {
         <Grid item xs={3} />
         <Grid item xs={6}>
           {allPosts &&
-            allPosts
-              .map(p => (
-                <AllPosts
-                  key={p.id}
-                  post={p}
-                  isAdmin={isAdmin}
-                  handleDeletePost={this.handleDeletePost}
-                  handleBlog={handleBlog}
-                />
-              ))
-              .reverse()}
+            allPosts.map(p => (
+              <AllPosts
+                key={p.id}
+                post={p}
+                isAdmin={isAdmin}
+                handleDeletePost={this.handleDeletePost}
+                handleBlog={handleBlog}
+              />
+            ))}
         </Grid>
         <Grid item xs={3} />
       </Grid>,

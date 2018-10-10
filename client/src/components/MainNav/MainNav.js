@@ -148,7 +148,7 @@ class MainNav extends Component {
               </Typography>
             </div>
             <div className={classes.topRight}>
-              {isAuthenticated && unseen > 0 ? (
+              {/* {isAuthenticated && unseen > 0 ? (
                 <IconButton
                   color="inherit"
                   onClick={handleOpenPopper}
@@ -166,7 +166,7 @@ class MainNav extends Component {
                 >
                   <NotificationIcon />
                 </IconButton>
-              )}
+              )} */}
               <Button
                 href={isAuthenticated ? null : '/api/google'}
                 onClick={isAuthenticated ? handleLogout : null}

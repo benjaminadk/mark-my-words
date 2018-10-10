@@ -30,7 +30,7 @@ const snippets = [
   { label: 'H4', value: '####' },
   { label: 'H5', value: '#####' },
   { label: 'HR', value: '---' },
-  { label: <LinkIcon />, value: '[LINK TEXT](LINK URL "TOOLTIP)' },
+  { label: <LinkIcon />, value: '[LINK TEXT](LINK URL "TOOLTIP")' },
   {
     label: <PhotoIcon />,
     value: '![IMAGE ALT TEXT HERE](IMAGE URL "TOOLTIP")'
