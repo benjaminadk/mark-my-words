@@ -6,3 +6,4 @@
 
 - [ ] Notification System
 - [ ] Fix View Counter
+- [ ] Change Repo Name
