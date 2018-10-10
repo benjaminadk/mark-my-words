@@ -7,27 +7,17 @@ import Chip from '@material-ui/core/Chip'
 import IconButton from '@material-ui/core/IconButton'
 import Typography from '@material-ui/core/Typography'
 import Tooltip from '@material-ui/core/Tooltip'
-import Loading from '../Loading'
 import DeleteIcon from '@material-ui/icons/Delete'
 import EditIcon from '@material-ui/icons/Edit'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import { formatDate } from '../../utils/formatDate'
-import { InfiniteLoader, List } from 'react-virtualized'
-import 'react-virtualized/styles.css'
 
 const styles = theme => ({
-  loader: {
-    display: 'flex',
-    justifyContent: 'center',
-    width: '100%'
+  card: {
+    marginTop: '5vh',
+    marginBottom: '5vh'
   },
-  list: {
-    outline: 'none'
-  },
-  cardContainer: {
-    margin: '2.5vh 10vh'
-  },
-  cardContent: {
+  content: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center'
@@ -68,8 +58,6 @@ const styles = theme => ({
   }
 })
 
-let virtualizingList = []
-
 class AllPosts extends Component {
   handleViewPost = postId => this.props.history.push(`/post/${postId}`)
 
@@ -78,107 +66,57 @@ class AllPosts extends Component {
     this.props.history.push('/edit')
   }
 
-  isRowLoaded = ({ index }) => !!virtualizingList[index]
-
-  noRowsRendered = () => <h1>No Posts returned from Graphql Server</h1>
-
-  rowRenderer = ({ key, index, style }) => {
-    let content, classes, tags
-    if (index < virtualizingList.length) {
-      content = virtualizingList[index].node
-      classes = this.props.classes
-      tags = virtualizingList[index].node.tags
-      if (!content) return null
-    } else {
-      content = <Loading />
-      classes = this.props.classes
-    }
-
-    return (
-      <div key={key} style={style}>
-        <div className={classes.cardContainer}>
-          <Card raised>
-            <div className={classes.cardContent}>
-              <div className={classes.iconButtons}>
-                <Tooltip title="View Post">
-                  <IconButton
-                    classes={{ root: classes.iconButton }}
-                    disableRipple
-                    onClick={() => this.handleViewPost(content.id)}
-                  >
-                    <VisibilityIcon />
-                  </IconButton>
-                </Tooltip>
-                {this.props.isAdmin && (
-                  <Tooltip title="Edit Post">
-                    <IconButton
-                      classes={{ root: classes.iconButton }}
-                      disableRipple
-                      onClick={() => this.handleEditPost(content)}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                  </Tooltip>
-                )}
-                {this.props.isAdmin && (
-                  <Tooltip title="Delete Post">
-                    <IconButton
-                      classes={{ root: classes.iconButton }}
-                      disableRipple
-                      onClick={() => this.props.handleDeletePost(content.id)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Tooltip>
-                )}
-              </div>
-              <img className={classes.image} src={content.image} alt="title" />
-              <Typography variant="display2" align="center">
-                {content.title}
-              </Typography>
-              <Typography variant="subheading">{content.subTitle}</Typography>
-              <Typography variant="caption" className={classes.postedOn}>
-                {`Posted On ${formatDate(content.createdAt)}`}
-              </Typography>
-              <div>
-                {tags &&
-                  tags.map(t => (
-                    <Chip key={t} label={t} className={classes.chip} />
-                  ))}
-              </div>
-            </div>
-          </Card>
-        </div>
-      </div>
-    )
-  }
-
   render() {
-    const { loadMoreRows, posts, totalCount, classes } = this.props
-    virtualizingList = posts
+    const { post, isAdmin, handleDeletePost, classes } = this.props
     return (
-      <div className={classes.loader}>
-        <InfiniteLoader
-          isRowLoaded={this.isRowLoaded}
-          loadMoreRows={loadMoreRows}
-          rowCount={totalCount}
-        >
-          {({ onRowsRendered, registerChild }) => (
-            <List
-              className={classes.list}
-              height={450}
-              onRowsRendered={onRowsRendered}
-              noRowsRenderer={this.noRowsRendered}
-              ref={registerChild}
-              rowCount={totalCount}
-              rowHeight={400}
-              rowRenderer={this.rowRenderer}
-              width={800}
-              overscanRowCount={5}
-            />
-          )}
-        </InfiniteLoader>
-      </div>
+      <Card raised className={classes.card}>
+        <div className={classes.content}>
+          <div className={classes.iconButtons}>
+            <Tooltip title="View Post">
+              <IconButton
+                classes={{ root: classes.iconButton }}
+                disableRipple
+                onClick={() => this.handleViewPost(post.id)}
+              >
+                <VisibilityIcon />
+              </IconButton>
+            </Tooltip>
+            {isAdmin && (
+              <Tooltip title="Edit Post">
+                <IconButton
+                  classes={{ root: classes.iconButton }}
+                  disableRipple
+                  onClick={() => this.handleEditPost(post)}
+                >
+                  <EditIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+            {isAdmin && (
+              <Tooltip title="Delete Post">
+                <IconButton
+                  classes={{ root: classes.iconButton }}
+                  disableRipple
+                  onClick={() => handleDeletePost(post.id)}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+          </div>
+          <img className={classes.image} src={post.image} alt="title" />
+          <Typography variant="display2" align="center">
+            {post.title}
+          </Typography>
+          <Typography variant="subheading">{post.subTitle}</Typography>
+          <Typography variant="caption" className={classes.postedOn}>
+            {`Posted On ${formatDate(post.createdAt)}`}
+          </Typography>
+          <div>
+            {post.tags && post.tags.map(t => <Chip key={t} label={t} className={classes.chip} />)}
+          </div>
+        </div>
+      </Card>
     )
   }
 }

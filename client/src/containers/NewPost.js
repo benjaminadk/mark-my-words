@@ -159,9 +159,7 @@ class NewPost extends Component {
     const options = {
       headers: { 'Content-Type': file.type },
       onUploadProgress: progressEvent => {
-        var percentCompleted = Math.round(
-          (progressEvent.loaded * 100) / progressEvent.total
-        )
+        var percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total)
         this.setState({ progress: percentCompleted })
       }
     }
@@ -257,8 +255,7 @@ class NewPost extends Component {
     let start = this.textarea.current.selectionStart
     let end = this.textarea.current.selectionEnd
     let { body } = this.state
-    let newBody =
-      body.substring(0, start) + snippet + body.substring(end, body.length)
+    let newBody = body.substring(0, start) + snippet + body.substring(end, body.length)
     this.setState({ body: newBody }, () => {
       this.textarea.current.focus()
       this.textarea.current.setSelectionRange(start, start + snippet.length)
@@ -295,11 +292,7 @@ class NewPost extends Component {
                 >
                   {!this.state.file &&
                     !this.state.image && (
-                      <Typography
-                        align="center"
-                        variant="body2"
-                        style={{ padding: '1vw' }}
-                      >
+                      <Typography align="center" variant="body2" style={{ padding: '1vw' }}>
                         Click || Drag & Drop
                       </Typography>
                     )}
@@ -333,10 +326,7 @@ class NewPost extends Component {
                 onKeyUp={this.handleTagKeyUp}
                 label="Tag"
               />
-              <IconButton
-                onClick={this.handleAddTag}
-                className={classes.addTagButton}
-              >
+              <IconButton onClick={this.handleAddTag} className={classes.addTagButton}>
                 <AddIcon />
               </IconButton>
             </div>
@@ -352,13 +342,9 @@ class NewPost extends Component {
                 ))}
             </Paper>
             <Button
-              variant="raised"
+              variant="contained"
               color="primary"
-              onClick={
-                this.props.editMode
-                  ? this.handleUpdateBlog
-                  : this.handleCreateBlog
-              }
+              onClick={this.props.editMode ? this.handleUpdateBlog : this.handleCreateBlog}
             >
               {this.props.editMode ? 'Update Post' : 'Create Post'}
             </Button>

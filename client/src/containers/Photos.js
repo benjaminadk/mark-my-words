@@ -100,9 +100,7 @@ class Photos extends Component {
     const options = {
       headers: { 'Content-Type': file.type },
       onUploadProgress: progressEvent => {
-        var percentCompleted = Math.round(
-          (progressEvent.loaded * 100) / progressEvent.total
-        )
+        var percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total)
         this.setState({ progress: percentCompleted })
       }
     }
@@ -120,9 +118,7 @@ class Photos extends Component {
   }
 
   handleDeleteImage = async image => {
-    var areTheySure = window.confirm(
-      `Delete Image ${image.title}? This action is permanent.`
-    )
+    var areTheySure = window.confirm(`Delete Image ${image.title}? This action is permanent.`)
     if (!areTheySure) return
     let response = await this.props.deleteImage({
       variables: { imageId: image.id, imageUrl: image.url },
@@ -183,7 +179,8 @@ class Photos extends Component {
           className={classes.fab}
           onClick={this.handleOpenUpload}
         >
-          <UploadIcon />Upload
+          <UploadIcon />
+          Upload
         </Button>
       </div>,
       <Snack
@@ -194,6 +191,7 @@ class Photos extends Component {
         handleClose={this.handleSnackClose}
       />,
       <Upload
+        key="upload"
         open={this.state.open}
         progress={this.state.progress}
         file={this.state.file}

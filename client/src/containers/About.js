@@ -32,15 +32,13 @@ class About extends Component {
           className={classes.image}
         />
         <div>
-          <Typography variant="body" align="justify" className={classes.text}>
-            Hello Everybody! Thanks for taking the time to check out my blog. As
-            of 2018 I am a little over one year into my pursuit of programming.
-            I still consider myself a relative beginner but I am putting the
-            time in and enjoying it. I really enjoy creating apps with
-            JavaScript, and I especially enjoy using React to make the UI for
-            those apps. Pretty soon I will be graduating Western Governor's
-            University with a B.S. in Software Development. Outside of computer
-            stuff I like to cycle and rock climb.
+          <Typography variant="body2" align="justify" className={classes.text}>
+            Hello Everybody! Thanks for taking the time to check out my blog. As of 2018 I am a
+            little over one year into my pursuit of programming. I still consider myself a relative
+            beginner but I am putting the time in and enjoying it. I really enjoy creating apps with
+            JavaScript, and I especially enjoy using React to make the UI for those apps. Pretty
+            soon I will be graduating Western Governor's University with a B.S. in Software
+            Development. Outside of computer stuff I like to cycle and rock climb.
           </Typography>
         </div>
       </div>
